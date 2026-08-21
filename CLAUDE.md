@@ -1,0 +1,42 @@
+# CLAUDE.md
+
+## Project
+
+Course repository for COSC 650: Applied LLM Systems (Maryville University).
+
+8-week graduate course covering tokenization, transformer architecture,
+prompt engineering, function calling, retrieval-augmented generation,
+fine-tuning, and evaluation.
+
+## Structure
+
+- week-01/ through week-08/ : weekly assignments and notebooks
+- notes/ : research notes and reading annotations
+- project/ : final project code and documentation
+- CLAUDE.md : this file
+- README.md : human-facing project description
+
+## Conventions
+
+- Coursework is organized by week.
+- Notebooks and Python code are developed locally and committed to GitHub.
+- All code is Python 3.11+ unless an assignment specifies otherwise.
+- tiktoken is used for tokenization experiments when required.
+- Commits use descriptive messages, not generic messages such as "update" or "fix".
+- Course requirements and assignment rubrics take priority over optional improvements.
+- Keep implementations focused on the current assignment.
+
+## Do Not
+
+- Delete files or directories without confirming first.
+- Push to main without checking what is staged.
+- Commit API keys, credentials, or any file in .env.
+- Change completed coursework unless specifically requested.
+- Add unnecessary frameworks or dependencies that are outside the scope of the assignment.
+- Invent assignment requirements that are not present in the course materials.
+
+## Learning Goal
+
+The goal is not only to produce working LLM applications, but to understand why their components work.
+
+When assisting with coursework, explain important implementation decisions and underlying LLM concepts rather than only providing finished code. Prefer direct implementations when they make the underlying behavior easier to understand.
