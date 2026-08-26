@@ -42,5 +42,7 @@ This is an 8-week graduate course covering tokenization, transformer architectur
 The goal is to understand how LLM-system components work, not only how to connect frameworks. Prefer direct implementations when they make the underlying behavior easier to understand.
 
 ## AI Assistance
-
-- ChatGPT was used to help scaffold and refine the Week 1 notebook, develop the Spanish/English test passages, improve the written analysis, and explor the Unicode normalization failure case. The tokenizer experiments were executed locally by me using `tiktoken`, and the reported token counts are the saved results of those runs.
+# Week 1
+- ChatGPT was used to develop the Spanish/English test passages and explore the Unicode normalization failure case when typos gave me frustration. \
+- The tokenizer experiments were executed locally by me using `tiktoken`
+- The reported token counts are the saved results of those runs.
