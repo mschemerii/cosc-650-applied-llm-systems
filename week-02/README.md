@@ -27,7 +27,7 @@ This design exercises all three sampling controls required by the Canvas discuss
 
 | Configuration | Length | Observation |
 | --- | ---: | --- |
-| Temperature `0.0` | 94 words | Most direct and least variable configuration |
+| Temperature `0.0` | 94 words | Most direct wording and strongest preference for likely tokens |
 | Temperature `0.7`, top-p `0.9` | 93 words | Smoothest and most natural explanation |
 | Temperature `1.2`, top-k `50` | 92 words | Slightly less precise because it describes generation as “word-by-word” |
 
