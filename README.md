@@ -14,7 +14,7 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | --- | --- | --- |
 | [Week 1](week-01/) | Tokenization | Compared Spanish and English tokenization, examined Unicode normalization, and documented a token-count failure case and mitigation. |
 | [Week 2](week-02/) | Inference and sampling | Examined how temperature, top-p, and top-k affect next-token selection and generated output. The Week 2 assignment and discussion are separate deliverables. |
-| [Weeks 3–8](week-03/) | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
+| Weeks 3–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
 
 ## Repository Organization
 
