@@ -1,0 +1,55 @@
+name: Week 2 Part 2 visualization refinement
+
+on:
+  push:
+    branches:
+      - "week-02/part2-visualizations"
+
+permissions:
+  contents: write
+
+jobs:
+  refine-notebook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install transformers torch numpy matplotlib jupyter nbconvert
+
+      - name: Refine Part 2 visualizations
+        run: python scripts/refine_week2_part2_visualizations.py
+
+      - name: Execute notebook
+        env:
+          MPLBACKEND: Agg
+        run: |
+          jupyter nbconvert --to notebook --execute --inplace \
+            --ExecutePreprocessor.timeout=1800 \
+            week-02/week2_sampling_experiment.ipynb
+
+      - name: Regenerate HTML
+        run: |
+          jupyter nbconvert --to html \
+            week-02/week2_sampling_experiment.ipynb \
+            --output week2_sampling_experiment.html \
+            --output-dir week-02
+
+      - name: Commit refined notebook and HTML
+        run: |
+          rm .github/workflows/week2-part2-refine.yml
+          rm scripts/refine_week2_part2_visualizations.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add week-02/week2_sampling_experiment.ipynb week-02/week2_sampling_experiment.html
+          git add -u .github/workflows/week2-part2-refine.yml scripts/refine_week2_part2_visualizations.py
+          git commit -m "Refine Week 2 Part 2 comparison plots"
+          git push origin HEAD:week-02/part2-visualizations
