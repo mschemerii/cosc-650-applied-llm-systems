@@ -11,7 +11,7 @@ Support-ticket classification into four categories: billing, technical, account,
 
 ## Hypothesis
 
-TODO: State why the primary-intent rule is expected to improve ambiguous support-ticket classification.
+The primary-intent rule is expected to improve ambiguous support-ticket classification by directing the model to focus on the customer's main problem instead of reacting to secondary details or individual keywords. This should reduce cases where a ticket is placed in the wrong category simply because it mentions a charge, account action, or technical symptom that is not the customer's primary reason for contacting support.
 
 ## Evaluation Method
 
