@@ -84,7 +84,3 @@ A next prompt revision could make the category-precedence rule more explicit for
 A second useful refinement would be to add an example for a straightforward shipping-status ticket such as test #4. This could test whether more explicit rationale guidance improves semantic consistency without changing the already-correct shipping classification.
 
 These are proposed follow-up changes only; they were not evaluated in the current experiment.
-
-## AI Tool Use
-
-ChatGPT was used to help scaffold and review the versioned prompt files, notebook structure, Colab/Gemini execution setup, comparison table, and this research-note organization. The reported measurements in this document come from the saved live Gemini notebook run. The final interpretation is limited to those observed measurements, and proposed prompt refinements are identified separately from the measured results.
