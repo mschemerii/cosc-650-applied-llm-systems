@@ -13,7 +13,6 @@ This is an 8-week graduate course covering tokenization, transformer architectur
 - `project/`: final project code and documentation
 - `README.md`: human-facing project description
 - `GEMINI.md`: Gemini project context and conventions
-- `CLAUDE.md`: Claude-specific project context retained for cross-tool compatibility
 
 ## Conventions
 
@@ -42,7 +41,22 @@ This is an 8-week graduate course covering tokenization, transformer architectur
 The goal is to understand how LLM-system components work, not only how to connect frameworks. Prefer direct implementations when they make the underlying behavior easier to understand.
 
 ## AI Assistance
-# Week 1
-- ChatGPT was used to develop the Spanish/English test passages and explore the Unicode normalization failure case when typos gave me frustration. \
-- The tokenizer experiments were executed locally by me using `tiktoken`
+
+### Week 1
+
+- ChatGPT was used to develop the Spanish/English test passages and explore the Unicode normalization failure case when typos caused frustration.
+- The tokenizer experiments were executed locally by me using `tiktoken`.
 - The reported token counts are the saved results of those runs.
+
+### Week 2
+
+- ChatGPT was used to review the assignment requirements, help interpret the sampling experiment, and improve explanations of temperature, top-k, top-p, probability-distribution changes, and the observed failure/surprise case.
+- ChatGPT was also used to review the completed notebook for rubric compliance and help update the Week 2 README.
+- The `distilgpt2` forward-pass and sampling experiments were executed by me, and the reported numerical measurements and outputs come from those runs.
+
+### Week 3
+
+- ChatGPT was used to scaffold and review the versioned prompt files, test-suite structure, evaluation code, and supporting documentation for the prompt-engineering assignment.
+- ChatGPT was used to help debug the Colab/Gemini API workflow, rate-limit handling, repository prompt-file loading, and the final comparison-table presentation.
+- ChatGPT was used to review the measured results and help organize the README and research note around the observed exact-match and semantic-similarity results.
+- The live Gemini experiment was executed by me using the saved notebook. The reported exact-match and semantic-similarity measurements are the results of that run; no regression or improvement was fabricated beyond the measured outputs.
