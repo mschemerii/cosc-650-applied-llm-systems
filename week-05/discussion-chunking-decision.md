@@ -1,0 +1,11 @@
+# Week 5 Discussion | The Chunking Decision
+
+For this experiment, I used the llama.cpp HTTP Server README as a technical manual from the local-LLM domain. I pinned the source to commit `217f81c266a7b7c986ee3d2c58e1cccee05a0744` so the experiment is reproducible. I compared three strategies: fixed-size chunks of 800 characters with no overlap, fixed-size chunks of 800 characters with 150 characters of overlap, and semantic chunks based on Markdown headings and paragraph boundaries, capped at about 1,800 characters. The resulting sets contained 133, 164, and 100 chunks respectively. Retrieval used the same TF-IDF cosine-similarity implementation for all three strategies.
+
+For “How do I start llama-server on macOS?”, semantic chunking was best. Its top result was chunk 36 (score 0.2309), which contained the Unix/macOS heading and the complete `./llama-server` command. The no-overlap strategy instead ranked a build-related chunk first (0.1943), showing how fixed boundaries can separate the actual usage example from nearby text.
+
+For “Which option controls how many model layers are stored in VRAM?”, the 800/150 overlapping strategy performed best with chunk 12 at 0.1633, narrowly ahead of no-overlap at 0.1560. The overlap preserved the `--n-gpu-layers` table row with surrounding GPU-offload context. Semantic chunking performed worse here because the large Common Parameters section diluted the exact option.
+
+For the CORS query, the no-overlap strategy had the highest raw score (0.3781), but its chunk began mid-sentence. I considered semantic retrieval better because chunk 32 (0.3632) preserved the full CORS section and recommendation for `--cors-origins localhost`.
+
+The main failures were split context with no overlap and near-duplicate material with overlap. In production, I would use heading-aware semantic chunks with a maximum size and add small overlap only when a long section must be split. I would also evaluate a larger query set before fixing the production parameters.
