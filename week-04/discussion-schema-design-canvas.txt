@@ -1,0 +1,65 @@
+Week 4 Discussion: Schema Rigidity and Tool Calling
+
+For this experiment, I designed a tool called search_support_tickets that queries an internal support-ticket database. I started with a deliberately loose schema:
+
+LOOSE SCHEMA
+
+{
+  "type": "object",
+  "properties": {
+    "status": {"type": "string"},
+    "priority": {"type": "string"},
+    "team": {"type": "string"},
+    "topic": {"type": "string"},
+    "days_back": {"type": "number"},
+    "limit": {"type": "number"}
+  }
+}
+
+I prompted the model: “Find the 10 highest-priority open AI-related support tickets from the last 30 days, assigned to the Facilities team.”
+
+LOOSE-SCHEMA OUTPUT
+
+{
+  "status": "currently_open",
+  "priority": "highest",
+  "team": "Facilities",
+  "topic": "artificial intelligence",
+  "days_back": 30,
+  "limit": 10
+}
+
+The response is understandable to a person, but it is unreliable for a database API. The model invented values such as "currently_open," "highest," and "artificial intelligence" because the schema did not restrict those fields. The loose schema also allowed negative numbers, decimals, missing fields, and unexpected additional properties.
+
+I then tightened the schema by adding enums, integer ranges, required fields, and additionalProperties: false.
+
+TIGHT SCHEMA
+
+{
+  "type": "object",
+  "properties": {
+    "status": {"type": "string", "enum": ["open", "closed", "pending"]},
+    "priority": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "team": {"type": "string", "enum": ["Facilities", "Sales", "Support"]},
+    "topic": {"type": "string", "enum": ["AI", "billing", "software", "hardware"]},
+    "days_back": {"type": "integer", "minimum": 1, "maximum": 365},
+    "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+  },
+  "required": ["status", "priority", "team", "topic", "days_back", "limit"],
+  "additionalProperties": false
+}
+
+TIGHT-SCHEMA OUTPUT
+
+{
+  "status": "open",
+  "priority": "critical",
+  "team": "Facilities",
+  "topic": "AI",
+  "days_back": 30,
+  "limit": 10
+}
+
+The tighter schema produced a structurally valid call, but one semantic issue remained. “Highest-priority” does not necessarily mean filtering only for critical tickets; it could mean retrieving all matching tickets and sorting them by priority. The schema prevented invalid values, but it did not fully resolve the meaning of the request.
+
+This suggests that schema rigidity is useful when it enforces known application rules, but too much rigidity can encode the wrong interpretation. A better next revision would add explicit sort_by and sort_order fields instead of forcing “highest-priority” into a priority filter.

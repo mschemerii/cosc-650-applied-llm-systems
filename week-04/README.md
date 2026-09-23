@@ -1,129 +1,52 @@
-# Week 4 — Tool Calling: From Model to Agent
+# Week 4: Tool Schemas and Structured Function Calling
 
-This week builds a complete function-calling loop with constrained tool schemas, tool execution, returned tool results, recovery from failure, and a guarded code-execution tool.
+COSC 650 - Applied LLM Systems
+
+## Overview
+
+Week 4 focuses on how JSON Schema constraints affect LLM tool calls. The discussion experiment compares a deliberately loose schema with a tighter schema for a support-ticket search tool and documents what the model gets wrong in each case.
+
+The experiment is designed to show the difference between syntactic validity and semantic correctness. A model can produce a structurally valid tool call while still choosing an interpretation that does not fully match the user's intent.
+
+## Discussion Experiment
+
+The tool used in the experiment is `search_support_tickets`. The prompt asks the model to find the 10 highest-priority open AI-related tickets from the last 30 days for the Facilities team.
+
+The loose schema allows unrestricted strings and numbers. This permits the model to invent values such as:
+
+- `currently_open`
+- `highest`
+- `artificial intelligence`
+
+The tightened schema adds:
+
+- enums for allowed categorical values
+- required fields
+- integer-only numeric fields
+- minimum and maximum numeric bounds
+- `additionalProperties: false`
+
+The tighter schema produces a structurally valid tool call, but it still exposes a semantic ambiguity: “highest-priority” may mean sorting all matching tickets by priority rather than filtering only for `critical` tickets.
 
 ## Files
 
-- `week4_tool_calling_agent.ipynb` — main assignment notebook
-- GitHub issue #15 — documented runtime failure and recovery case
+- `discussion-schema-design.md` - full Week 4 discussion post with the loose schema, tight schema, model outputs, and analysis.
+- `discussion-schema-design-canvas.txt` - plain-text version formatted for direct copy and paste into a Canvas discussion thread.
+- `week4_schema_design_discussion.ipynb` - executable notebook that runs the loose and tight schema tests and validates the returned arguments with JSON Schema.
 
-## Assignment mapping
+## Running the Notebook
 
-### Part 1 — Build the assistant
+The notebook is designed for Google Colab or a local Python environment.
 
-The notebook defines three tools with constrained JSON schemas:
+For live model calls:
 
-1. `lookup_course_reference`
-   - Required fields: `topic`, `detail`
-   - Enums constrain both fields to supported values.
-   - Used for a small deterministic local reference lookup.
+1. Add `GEMINI_API_KEY` to Colab Secrets or set it as an environment variable.
+2. Run the notebook from top to bottom.
+3. Compare the live outputs with the captured discussion examples.
+4. If the model returns different arguments, update the discussion post with the actual observed outputs before submitting.
 
-2. `convert_length`
-   - Required fields: `value`, `from_unit`, `to_unit`
-   - `value` is numeric.
-   - Unit fields use enums so unsupported units cannot be requested through the schema.
+The notebook also includes local schema-validation edge cases to demonstrate how the tighter schema rejects invalid enum values, negative ranges, fractional limits, and unexpected properties.
 
-3. `run_guarded_python`
-   - Required fields: `task`, `code`
-   - `task` is restricted to the `arithmetic` enum.
-   - `code` is a string containing one arithmetic expression.
+## Main Takeaway
 
-All schemas set `additionalProperties: false`.
-
-The notebook implements the complete loop: send tools to the model, intercept tool calls, execute locally, append structured tool results, and call the model again until it returns a final answer.
-
-### Part 2 — Guarded code runner
-
-The code runner uses an AST allowlist before execution.
-
-**Permitted**
-- Numeric constants
-- Parentheses
-- `+`, `-`, `*`, `/`, `//`, `%`, `**`
-- Unary `+` and `-`
-
-**Blocked**
-- Filesystem access
-- Network access
-- Imports
-- Function and method calls
-- Variable/name access
-- Attribute access
-- Indexing/subscripts
-- Loops, assignments, comprehensions, and control flow
-- Model-supplied process execution
-
-The validated expression executes in a separate worker process with empty built-ins. The parent process terminates the worker if the execution exceeds the configured time limit.
-
-This is a focused instructional guardrail, not a production sandbox.
-
-### Part 3 — Evaluation
-
-The notebook includes four live evaluation queries:
-
-1. Course-reference lookup
-2. Length conversion
-3. Guarded arithmetic execution
-4. Two-tool sequence: guarded arithmetic followed by length conversion
-
-The agent records a tool-call log for every run containing:
-- selected tool,
-- arguments,
-- success/failure status,
-- structured result.
-
-The saved executed notebook should contain the actual Gemini outputs.
-
-### Part 4 — Failure and recovery
-
-The notebook intentionally requests:
-
-```json
-{
-  "task": "arithmetic",
-  "code": "10 / 0"
-}
-```
-
-The call is valid according to the JSON schema and AST guardrail but fails at runtime with `ZeroDivisionError`. The tool catches the exception and returns a structured error to the model. The model is then given the opportunity to retry with `10 / 2`.
-
-This is a **retry after structured runtime error**. The case is also documented in [GitHub issue #15](https://github.com/mschemerii/cosc-650-applied-llm-systems/issues/15).
-
-## Model and environment
-
-The notebook uses Gemini Flash through Google's OpenAI-compatible endpoint with the OpenAI Python client.
-
-The API key is loaded from the `GEMINI_API_KEY` environment variable and must not be committed to GitHub.
-
-The notebook includes:
-- short exponential backoff for failed model requests,
-- an in-memory response cache to avoid unnecessary repeated calls during one session,
-- no GPU requirement.
-
-## Running the notebook
-
-1. Open the notebook in Jupyter or Google Colab.
-2. Set `GEMINI_API_KEY` in the environment.
-3. Run the notebook from top to bottom.
-4. Verify the tool-call logs show the expected tools and arguments.
-5. Verify the failure experiment records the initial error and successful retry.
-6. Save the executed notebook with outputs before submission.
-7. Export the executed notebook to PDF or HTML for Canvas.
-
-## Submission checklist
-
-- [ ] Notebook executes from top to bottom.
-- [ ] Three constrained tools are present.
-- [ ] All tool schemas use required fields, explicit types, and enums where appropriate.
-- [ ] Full function-calling loop is demonstrated.
-- [ ] Guardrail permissions and blocked categories are stated plainly.
-- [ ] Code execution is validated before running and time-limited.
-- [ ] At least three evaluation queries are shown.
-- [ ] Every tool is exercised.
-- [ ] At least one query uses two tools in sequence.
-- [ ] Tool-call logs show tool, arguments, and success/failure.
-- [ ] Real failure and recovery are documented.
-- [ ] GitHub issue #15 contains the failure/recovery write-up.
-- [ ] `GEMINI.md` documents AI assistance.
-- [ ] Same executed notebook is committed to GitHub and exported for Canvas.
-- [ ] Pull request description explains schema choices and links the notebook and issue.
+Schema constraints are effective at narrowing the space of invalid tool calls, but they do not eliminate ambiguity in natural-language intent. The most useful constraints enforce application rules while leaving genuinely ambiguous choices explicit rather than encoding them indirectly.
