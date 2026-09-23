@@ -4,49 +4,105 @@ COSC 650 - Applied LLM Systems
 
 ## Overview
 
-Week 4 focuses on how JSON Schema constraints affect LLM tool calls. The discussion experiment compares a deliberately loose schema with a tighter schema for a support-ticket search tool and documents what the model gets wrong in each case.
+Week 4 covers both schema design and the complete model-to-tool execution loop. The work for this week includes a discussion experiment comparing loose and constrained schemas, plus the main assignment notebook that implements an agent loop with three tools, guarded code execution, structured error handling, and recovery.
 
-The experiment is designed to show the difference between syntactic validity and semantic correctness. A model can produce a structurally valid tool call while still choosing an interpretation that does not fully match the user's intent.
+## Main Assignment
+
+The main assignment notebook is `week4_tool_calling_agent.ipynb`.
+
+It implements three tools:
+
+1. `lookup_course_reference`
+   - Required fields: `topic` and `detail`
+   - Uses enums to restrict both fields to supported values
+   - Uses `additionalProperties: false`
+
+2. `convert_length`
+   - Required fields: `value`, `from_unit`, and `to_unit`
+   - Uses an explicit numeric type for `value`
+   - Uses enums for supported units
+   - Uses `additionalProperties: false`
+
+3. `run_guarded_python`
+   - Required fields: `task` and `code`
+   - Restricts `task` to the `arithmetic` enum
+   - Accepts one arithmetic expression as a string
+   - Uses `additionalProperties: false`
+
+The notebook implements the complete function-calling loop: the model receives the tool schemas, selects a tool, sends arguments, receives the structured result, and continues until it produces a final answer.
+
+## Guarded Code Runner
+
+The code runner validates model-suggested arithmetic with an AST allowlist before execution.
+
+Permitted operations include numeric constants, parentheses, arithmetic operators, and unary plus/minus.
+
+Blocked categories include:
+
+- filesystem access
+- network access
+- imports
+- function and method calls
+- variable/name access
+- attribute access
+- indexing/subscripts
+- loops, assignments, comprehensions, and other control flow
+- model-supplied process execution
+
+The validated expression executes in a separate worker process with empty built-ins and a time limit. This is a focused classroom guardrail, not a production sandbox.
+
+## Evaluation Results
+
+The executed notebook contains four evaluation queries:
+
+- course-reference lookup
+- length conversion
+- guarded arithmetic
+- a two-tool sequence that calculates `144 * 3` and then converts the result from centimeters to meters
+
+The saved tool-call logs show the tool selected, arguments sent, success/failure status, and returned result.
+
+The measured two-tool sequence successfully called:
+
+1. `run_guarded_python` → `432`
+2. `convert_length` → `4.32 meters`
+
+## Failure and Recovery
+
+The notebook intentionally calls:
+
+```json
+{
+  "task": "arithmetic",
+  "code": "10 / 0"
+}
+```
+
+The call is schema-valid and passes the arithmetic allowlist, but fails at runtime with `ZeroDivisionError`. The tool returns that error as structured data rather than crashing the agent loop. The model then retries with `10 / 2` and receives the successful result `5.0`.
+
+This failure and recovery are documented in [GitHub issue #15](https://github.com/mschemerii/cosc-650-applied-llm-systems/issues/15).
 
 ## Discussion Experiment
 
-The tool used in the experiment is `search_support_tickets`. The prompt asks the model to find the 10 highest-priority open AI-related tickets from the last 30 days for the Facilities team.
-
-The loose schema allows unrestricted strings and numbers. This permits the model to invent values such as:
-
-- `currently_open`
-- `highest`
-- `artificial intelligence`
-
-The tightened schema adds:
-
-- enums for allowed categorical values
-- required fields
-- integer-only numeric fields
-- minimum and maximum numeric bounds
-- `additionalProperties: false`
-
-The tighter schema produces a structurally valid tool call, but it still exposes a semantic ambiguity: “highest-priority” may mean sorting all matching tickets by priority rather than filtering only for `critical` tickets.
+The separate Week 4 discussion experiment compares loose and constrained JSON Schemas for a support-ticket search tool. It demonstrates that schema constraints reduce invalid tool arguments but cannot eliminate semantic ambiguity in natural-language intent.
 
 ## Files
 
-- `discussion-schema-design.md` - full Week 4 discussion post with the loose schema, tight schema, model outputs, and analysis.
-- `discussion-schema-design-canvas.txt` - plain-text version formatted for direct copy and paste into a Canvas discussion thread.
-- `week4_schema_design_discussion.ipynb` - executable notebook that runs the loose and tight schema tests and validates the returned arguments with JSON Schema.
+- [`week4_tool_calling_agent.ipynb`](week4_tool_calling_agent.ipynb) - executed main Week 4 assignment notebook
+- [`week4_tool_calling_agent.html`](week4_tool_calling_agent.html) - HTML export for Canvas submission
+- [`week4_schema_design_discussion.ipynb`](week4_schema_design_discussion.ipynb) - discussion experiment notebook
+- [`discussion-schema-design.md`](discussion-schema-design.md) - full discussion post
+- [`discussion-schema-design-canvas.txt`](discussion-schema-design-canvas.txt) - Canvas-ready discussion text
 
-## Running the Notebook
-
-The notebook is designed for Google Colab or a local Python environment.
-
-For live model calls:
+## Running the Assignment Notebook
 
 1. Add `GEMINI_API_KEY` to Colab Secrets or set it as an environment variable.
-2. Run the notebook from top to bottom.
-3. Compare the live outputs with the captured discussion examples.
-4. If the model returns different arguments, update the discussion post with the actual observed outputs before submitting.
-
-The notebook also includes local schema-validation edge cases to demonstrate how the tighter schema rejects invalid enum values, negative ranges, fractional limits, and unexpected properties.
+2. Run `week4_tool_calling_agent.ipynb` from top to bottom.
+3. Verify that the saved tool-call logs show all three tools.
+4. Verify that the two-tool query uses both tools in sequence.
+5. Verify that the failure case records the initial `ZeroDivisionError` and successful retry.
+6. Export the executed notebook to HTML or PDF for Canvas.
 
 ## Main Takeaway
 
-Schema constraints are effective at narrowing the space of invalid tool calls, but they do not eliminate ambiguity in natural-language intent. The most useful constraints enforce application rules while leaving genuinely ambiguous choices explicit rather than encoding them indirectly.
+Tight schemas limit the model's action space, while the agent loop allows the model to use tool results as new context and decide what to do next. Structured errors are just as important as successful results because they allow the system to recover from failures without crashing.
