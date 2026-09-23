@@ -14,11 +14,13 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | --- | --- | --- |
 | [Week 1](week-01/) | Tokenization | Compared Spanish and English tokenization, examined Unicode normalization, and documented a token-count failure case and mitigation. |
 | [Week 2](week-02/) | Inference and sampling | Examined how temperature, top-p, and top-k affect next-token selection and generated output. The Week 2 assignment and discussion are separate deliverables. |
-| Weeks 3–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
+| [Week 3](week-03/) | Prompts as engineering artifacts | Versioned and evaluated support-ticket classification prompts over a 10-case test set using exact-match accuracy and semantic similarity. |
+| [Week 4](week-04/) | Tool schemas and structured function calling | Compared loose and tight JSON Schemas for an LLM tool call, documented invalid and ambiguous outputs, and tested schema constraints in a Jupyter notebook. |
+| Weeks 5–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
 
 ## Repository Organization
 
-- `week-01/` through `week-08/` — weekly assignments, experiments, and notebooks
+- `week-01/` through `week-08/` — weekly assignments, experiments, discussions, and notebooks
 - `notes/` — research notes and reading annotations
 - `project/` — final project code and documentation
 - `CLAUDE.md` and `GEMINI.md` — project context and conventions for AI coding assistants
@@ -34,10 +36,11 @@ Technologies used throughout the course may include:
 - tiktoken
 - OpenAI SDK
 - Anthropic SDK
-- Local large language models
-- Retrieval-augmented generation
+- JSON Schema
 - LLM tool and function calling
 - Structured outputs
+- Retrieval-augmented generation
+- Local large language models
 - Model and application evaluation
 
 ## Workflow
