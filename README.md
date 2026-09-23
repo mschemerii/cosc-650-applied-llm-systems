@@ -15,8 +15,9 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | [Week 1](week-01/) | Tokenization | Compared Spanish and English tokenization, examined Unicode normalization, and documented a token-count failure case and mitigation. |
 | [Week 2](week-02/) | Inference and sampling | Examined how temperature, top-p, and top-k affect next-token selection and generated output. The Week 2 assignment and discussion are separate deliverables. |
 | [Week 3](week-03/) | Prompts as engineering artifacts | Versioned and evaluated support-ticket classification prompts over a 10-case test set using exact-match accuracy and semantic similarity. |
-| [Week 4](week-04/) | Tool schemas and structured function calling | Compared loose and tight JSON Schemas for an LLM tool call, documented invalid and ambiguous outputs, and tested schema constraints in a Jupyter notebook. |
-| Weeks 5–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
+| [Week 4](week-04/) | Tool calling and structured function calling | Built a complete Gemini tool-calling loop with three constrained JSON-schema tools, guarded arithmetic code execution, multi-tool sequencing, structured failure handling, and successful recovery. A separate discussion experiment compares loose and tight tool schemas. |
+| [Week 5](week-05/) | Retrieval and chunking | Compares fixed-size, overlapping, and semantic chunking strategies using a real technical document and consistent retrieval queries. |
+| Weeks 6–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
 
 ## Repository Organization
 
@@ -32,7 +33,7 @@ Technologies used throughout the course may include:
 - Python 3.11+
 - Jupyter notebooks and Google Colab
 - Hugging Face Transformers
-- Google Gen AI SDK
+- Google Gemini through the OpenAI-compatible endpoint
 - tiktoken
 - OpenAI SDK
 - Anthropic SDK
@@ -45,7 +46,7 @@ Technologies used throughout the course may include:
 
 ## Workflow
 
-Weekly work is developed on a dedicated branch and submitted through a pull request with a written results summary. Notebooks retain their measured outputs, and supporting research is documented through linked GitHub issues when required.
+Weekly work is developed on a dedicated branch and submitted through a pull request with a written results summary. Notebooks retain their measured outputs, and supporting research or failure analysis is documented through linked GitHub issues when required.
 
 ## Purpose
 
