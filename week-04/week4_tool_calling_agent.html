@@ -96,485 +96,1342 @@ print(&quot;Client configured for:&quot;, MODEL)</code></pre><pre class="output"
                         &quot;enum&quot;: [&quot;millimeters&quot;, &quot;centimeters&quot;, &quot;meters&quot;, &quot;kilometers&quot;, &quot;inches&quot;, &quot;feet&quot;, &quot;miles&quot;],
                     },
                 },
-                &quot;required&quot;: [&quot;value&quot;, &quot;from_unit&quot;, &quot;to_unit&quot;],
-                &quot;additionalProperties&quot;: False,
-            },
-        },
-    },
-    {
-        &quot;type&quot;: &quot;function&quot;,
-        &quot;function&quot;: {
-            &quot;name&quot;: &quot;run_guarded_python&quot;,
-            &quot;description&quot;: (
-                &quot;Evaluate exactly one numeric arithmetic expression. &quot;
-                &quot;Only arithmetic is permitted; do not use names, imports, files, network access, &quot;
-                &quot;function calls, attribute access, indexing, or process operations.&quot;
-            ),
-            &quot;parameters&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                    &quot;task&quot;: {
-                        &quot;type&quot;: &quot;string&quot;,
-                        &quot;enum&quot;: [&quot;arithmetic&quot;],
-                    },
-                    &quot;code&quot;: {
-                        &quot;type&quot;: &quot;string&quot;,
-                        &quot;description&quot;: &quot;One Python arithmetic expression such as (17 * 23) + 11.&quot;,
-                    },
+                tex2jax: {
+                    inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                    displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+                    processEscapes: true,
+                    processEnvironments: true
                 },
-                &quot;required&quot;: [&quot;task&quot;, &quot;code&quot;],
-                &quot;additionalProperties&quot;: False,
-            },
-        },
-    },
-]
-
-print(json.dumps(TOOLS, indent=2))</code></pre><pre class="output">[
-  {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-      &quot;name&quot;: &quot;lookup_course_reference&quot;,
-      &quot;description&quot;: &quot;Look up a concise local reference for Week 4 concepts. Use only one of the supported topics and one detail level.&quot;,
-      &quot;parameters&quot;: {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;topic&quot;: {
-            &quot;type&quot;: &quot;string&quot;,
-            &quot;enum&quot;: [
-              &quot;tool_calling&quot;,
-              &quot;schema_design&quot;,
-              &quot;guardrails&quot;
-            ]
-          },
-          &quot;detail&quot;: {
-            &quot;type&quot;: &quot;string&quot;,
-            &quot;enum&quot;: [
-              &quot;summary&quot;,
-              &quot;checklist&quot;
-            ]
-          }
-        },
-        &quot;required&quot;: [
-          &quot;topic&quot;,
-          &quot;detail&quot;
-        ],
-        &quot;additionalProperties&quot;: false
-      }
-    }
-  },
-  {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-      &quot;name&quot;: &quot;convert_length&quot;,
-      &quot;description&quot;: &quot;Convert one numeric length between supported units. Use this instead of estimating the conversion.&quot;,
-      &quot;parameters&quot;: {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;value&quot;: {
-            &quot;type&quot;: &quot;number&quot;
-          },
-          &quot;from_unit&quot;: {
-            &quot;type&quot;: &quot;string&quot;,
-            &quot;enum&quot;: [
-              &quot;millimeters&quot;,
-              &quot;centimeters&quot;,
-              &quot;meters&quot;,
-              &quot;kilometers&quot;,
-              &quot;inches&quot;,
-              &quot;feet&quot;,
-              &quot;miles&quot;
-            ]
-          },
-          &quot;to_unit&quot;: {
-            &quot;type&quot;: &quot;string&quot;,
-            &quot;enum&quot;: [
-              &quot;millimeters&quot;,
-              &quot;centimeters&quot;,
-              &quot;meters&quot;,
-              &quot;kilometers&quot;,
-              &quot;inches&quot;,
-              &quot;feet&quot;,
-              &quot;miles&quot;
-            ]
-          }
-        },
-        &quot;required&quot;: [
-          &quot;value&quot;,
-          &quot;from_unit&quot;,
-          &quot;to_unit&quot;
-        ],
-        &quot;additionalProperties&quot;: false
-      }
-    }
-  },
-  {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-      &quot;name&quot;: &quot;run_guarded_python&quot;,
-      &quot;description&quot;: &quot;Evaluate exactly one numeric arithmetic expression. Only arithmetic is permitted; do not use names, imports, files, network access, function calls, attribute access, indexing, or process operations.&quot;,
-      &quot;parameters&quot;: {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;task&quot;: {
-            &quot;type&quot;: &quot;string&quot;,
-            &quot;enum&quot;: [
-              &quot;arithmetic&quot;
-            ]
-          },
-          &quot;code&quot;: {
-            &quot;type&quot;: &quot;string&quot;,
-            &quot;description&quot;: &quot;One Python arithmetic expression such as (17 * 23) + 11.&quot;
-          }
-        },
-        &quot;required&quot;: [
-          &quot;task&quot;,
-          &quot;code&quot;
-        ],
-        &quot;additionalProperties&quot;: false
-      }
-    }
-  }
-]
-</pre></section><section class="cell markdown"><h2>3. Tool implementations</h2><div class='spacer'></div><h3>Local reference and conversion tools</h3><div class='spacer'></div><p>These tools are intentionally deterministic and local. They do not need network access, which keeps the experiment focused on function calling rather than external API behavior.</p></section><section class="cell codecell"><div class="prompt">In [4]:</div><pre class="code"><code>COURSE_REFERENCE = {
-    &quot;tool_calling&quot;: {
-        &quot;summary&quot;: &quot;A model becomes agent-like when it can choose a tool, receive its result, and decide what to do next.&quot;,
-        &quot;checklist&quot;: [
-            &quot;Send tool schemas with the model request.&quot;,
-            &quot;Inspect returned tool calls.&quot;,
-            &quot;Execute the selected tool.&quot;,
-            &quot;Append the tool result to the conversation.&quot;,
-            &quot;Call the model again so it can continue.&quot;,
-        ],
-    },
-    &quot;schema_design&quot;: {
-        &quot;summary&quot;: &quot;Tight schemas constrain what arguments a model may send and reduce ambiguous or invented structures.&quot;,
-        &quot;checklist&quot;: [
-            &quot;Use explicit JSON types.&quot;,
-            &quot;Mark required fields.&quot;,
-            &quot;Use enums for closed choices.&quot;,
-            &quot;Reject unexpected properties.&quot;,
-            &quot;Keep structures as simple as the task allows.&quot;,
-        ],
-    },
-    &quot;guardrails&quot;: {
-        &quot;summary&quot;: &quot;A guardrail checks model-suggested actions before execution and blocks categories outside the intended capability.&quot;,
-        &quot;checklist&quot;: [
-            &quot;Define an allowlist.&quot;,
-            &quot;Validate before execution.&quot;,
-            &quot;Return structured errors.&quot;,
-            &quot;Limit execution time.&quot;,
-            &quot;State clearly what is blocked.&quot;,
-        ],
-    },
-}
-
-METERS_PER_UNIT = {
-    &quot;millimeters&quot;: 0.001,
-    &quot;centimeters&quot;: 0.01,
-    &quot;meters&quot;: 1.0,
-    &quot;kilometers&quot;: 1000.0,
-    &quot;inches&quot;: 0.0254,
-    &quot;feet&quot;: 0.3048,
-    &quot;miles&quot;: 1609.344,
-}
-
-def lookup_course_reference(topic: str, detail: str) -&gt; dict:
-    return {
-        &quot;status&quot;: &quot;ok&quot;,
-        &quot;topic&quot;: topic,
-        &quot;detail&quot;: detail,
-        &quot;content&quot;: COURSE_REFERENCE[topic][detail],
-    }
-
-def convert_length(value: float, from_unit: str, to_unit: str) -&gt; dict:
-    meters = value * METERS_PER_UNIT[from_unit]
-    converted = meters / METERS_PER_UNIT[to_unit]
-    return {
-        &quot;status&quot;: &quot;ok&quot;,
-        &quot;input&quot;: {&quot;value&quot;: value, &quot;unit&quot;: from_unit},
-        &quot;output&quot;: {&quot;value&quot;: converted, &quot;unit&quot;: to_unit},
-    }</code></pre></section><section class="cell markdown"><h3>Guarded code runner</h3><div class='spacer'></div><p>The code runner is deliberately narrow.</p><div class='spacer'></div><p><strong>Permitted</strong></p><ul><li>numeric constants,</li><li>parentheses,</li><li>arithmetic operators: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>//</code>, <code>%</code>, and <code>**</code>,</li><li>unary <code>+</code> and <code>-</code>.</li></ul><div class='spacer'></div><p><strong>Blocked categories</strong></p><ul><li>filesystem access,</li><li>network access,</li><li>imports,</li><li>function or method calls,</li><li>variable/name access,</li><li>attribute access,</li><li>indexing/subscripts,</li><li>loops, assignments, comprehensions, and control flow,</li><li>model-supplied process execution.</li></ul><div class='spacer'></div><p>The runner parses the expression with Python's AST module and rejects any node that is not on the allowlist. Execution occurs with empty built-ins in a separate worker process. The parent terminates the worker if it exceeds the time limit. This is a focused classroom guardrail, <strong>not</strong> a production sandbox.</p></section><section class="cell codecell"><div class="prompt">In [5]:</div><pre class="code"><code>ALLOWED_AST_NODES = (
-    ast.Expression,
-    ast.BinOp,
-    ast.UnaryOp,
-    ast.Constant,
-    ast.Add,
-    ast.Sub,
-    ast.Mult,
-    ast.Div,
-    ast.FloorDiv,
-    ast.Mod,
-    ast.Pow,
-    ast.USub,
-    ast.UAdd,
-)
-
-def validate_arithmetic_expression(source: str) -&gt; ast.AST:
-    try:
-        tree = ast.parse(source, mode=&quot;eval&quot;)
-    except SyntaxError as exc:
-        raise ValueError(f&quot;Syntax error: {exc.msg}&quot;) from exc
-
-    for node in ast.walk(tree):
-        if not isinstance(node, ALLOWED_AST_NODES):
-            raise ValueError(
-                f&quot;Blocked AST node: {type(node).__name__}. &quot;
-                &quot;Only numeric arithmetic expressions are allowed.&quot;
-            )
-        if isinstance(node, ast.Constant) and not isinstance(node.value, (int, float)):
-            raise ValueError(&quot;Only integer and floating-point numeric constants are allowed.&quot;)
-
-    return tree
-
-def _arithmetic_worker(source: str, output_queue: mp.Queue) -&gt; None:
-    try:
-        tree = validate_arithmetic_expression(source)
-        compiled = compile(tree, &quot;&lt;guarded-arithmetic&gt;&quot;, &quot;eval&quot;)
-        result = eval(compiled, {&quot;__builtins__&quot;: {}}, {})
-        if not isinstance(result, (int, float)) or isinstance(result, bool):
-            raise ValueError(&quot;Result must be numeric.&quot;)
-        if isinstance(result, float) and not math.isfinite(result):
-            raise ValueError(&quot;Result must be finite.&quot;)
-        output_queue.put({&quot;status&quot;: &quot;ok&quot;, &quot;result&quot;: result})
-    except Exception as exc:
-        output_queue.put({
-            &quot;status&quot;: &quot;error&quot;,
-            &quot;error_type&quot;: type(exc).__name__,
-            &quot;message&quot;: str(exc),
-        })
-
-def run_guarded_python(task: str, code: str, timeout_seconds: float = 2.0) -&gt; dict:
-    if task != &quot;arithmetic&quot;:
-        return {
-            &quot;status&quot;: &quot;error&quot;,
-            &quot;error_type&quot;: &quot;UnsupportedTask&quot;,
-            &quot;message&quot;: &quot;Only the arithmetic task is permitted.&quot;,
-        }
-
-    # Validate in the parent before any worker starts.
-    try:
-        validate_arithmetic_expression(code)
-    except Exception as exc:
-        return {
-            &quot;status&quot;: &quot;error&quot;,
-            &quot;error_type&quot;: type(exc).__name__,
-            &quot;message&quot;: str(exc),
-        }
-
-    queue = mp.Queue()
-    process = mp.Process(target=_arithmetic_worker, args=(code, queue))
-    process.start()
-    process.join(timeout_seconds)
-
-    if process.is_alive():
-        process.terminate()
-        process.join()
-        return {
-            &quot;status&quot;: &quot;error&quot;,
-            &quot;error_type&quot;: &quot;TimeoutError&quot;,
-            &quot;message&quot;: f&quot;Execution exceeded {timeout_seconds} seconds.&quot;,
-        }
-
-    if queue.empty():
-        return {
-            &quot;status&quot;: &quot;error&quot;,
-            &quot;error_type&quot;: &quot;ExecutionError&quot;,
-            &quot;message&quot;: &quot;The worker ended without returning a result.&quot;,
-        }
-
-    return queue.get()
-
-# Guardrail spot checks
-guardrail_checks = {
-    &quot;allowed&quot;: run_guarded_python(&quot;arithmetic&quot;, &quot;(17 * 23) + 11&quot;),
-    &quot;blocked_function_call&quot;: run_guarded_python(&quot;arithmetic&quot;, &quot;__import__('os').system('echo unsafe')&quot;),
-    &quot;blocked_name&quot;: run_guarded_python(&quot;arithmetic&quot;, &quot;open('/tmp/example.txt')&quot;),
-}
-print(json.dumps(guardrail_checks, indent=2))</code></pre><pre class="output">{
-  &quot;allowed&quot;: {
-    &quot;status&quot;: &quot;ok&quot;,
-    &quot;result&quot;: 402
-  },
-  &quot;blocked_function_call&quot;: {
-    &quot;status&quot;: &quot;error&quot;,
-    &quot;error_type&quot;: &quot;ValueError&quot;,
-    &quot;message&quot;: &quot;Blocked AST node: Call. Only numeric arithmetic expressions are allowed.&quot;
-  },
-  &quot;blocked_name&quot;: {
-    &quot;status&quot;: &quot;error&quot;,
-    &quot;error_type&quot;: &quot;ValueError&quot;,
-    &quot;message&quot;: &quot;Blocked AST node: Call. Only numeric arithmetic expressions are allowed.&quot;
-  }
-}
-</pre></section><section class="cell markdown"><h2>4. Dispatcher and full agent loop</h2><div class='spacer'></div><p>The loop below is the key agent behavior:</p><div class='spacer'></div><p>1. Send the conversation and tool schemas to the model.</p><p>2. If the model returns one or more tool calls, record them.</p><p>3. Execute each tool locally.</p><p>4. Append each structured tool result to the conversation.</p><p>5. Send the updated conversation back to the model.</p><p>6. Repeat until the model returns a normal final answer or the maximum number of rounds is reached.</p><div class='spacer'></div><p>Tool failures are returned to the model as data. They do not crash the agent loop.</p></section><section class="cell codecell"><div class="prompt">In [6]:</div><pre class="code"><code>def dispatch_tool(name: str, arguments: dict) -&gt; dict:
-    try:
-        if name == &quot;lookup_course_reference&quot;:
-            return lookup_course_reference(**arguments)
-        if name == &quot;convert_length&quot;:
-            return convert_length(**arguments)
-        if name == &quot;run_guarded_python&quot;:
-            return run_guarded_python(**arguments)
-        return {
-            &quot;status&quot;: &quot;error&quot;,
-            &quot;error_type&quot;: &quot;UnknownTool&quot;,
-            &quot;message&quot;: f&quot;Unknown tool: {name}&quot;,
-        }
-    except Exception as exc:
-        return {
-            &quot;status&quot;: &quot;error&quot;,
-            &quot;error_type&quot;: type(exc).__name__,
-            &quot;message&quot;: str(exc),
-        }
-
-def model_request(messages, max_retries=5):
-    &quot;&quot;&quot;Call Gemini with bounded exponential backoff for transient/rate-limit failures.&quot;&quot;&quot;
-    delay = 2
-
-    for attempt in range(max_retries):
-        try:
-            return client.chat.completions.create(
-                model=MODEL,
-                messages=messages,
-                tools=TOOLS,
-                tool_choice=&quot;auto&quot;,
-                temperature=0,
-            )
-        except Exception as exc:
-            message = str(exc)
-            transient = (
-                &quot;429&quot; in message
-                or &quot;RESOURCE_EXHAUSTED&quot; in message
-                or &quot;rate&quot; in message.lower()
-                or &quot;500&quot; in message
-                or &quot;502&quot; in message
-                or &quot;503&quot; in message
-                or &quot;504&quot; in message
-            )
-
-            if not transient or attempt == max_retries - 1:
-                raise
-
-            print(
-                f&quot;Transient API failure ({type(exc).__name__}). &quot;
-                f&quot;Retrying in {delay} seconds...&quot;
-            )
-            time.sleep(delay)
-            delay = min(delay * 2, 30)
-
-RESPONSE_CACHE: dict[str, dict] = {}
-
-def run_agent(user_query: str, use_cache: bool = True, max_rounds: int = 8) -&gt; dict:
-    if use_cache and user_query in RESPONSE_CACHE:
-        print(&quot;Using cached result for this query.&quot;)
-        return RESPONSE_CACHE[user_query]
-
-    messages = [
-        {
-            &quot;role&quot;: &quot;system&quot;,
-            &quot;content&quot;: (
-                &quot;You are a careful Week 4 tool-calling assistant. &quot;
-                &quot;Use the supplied tools whenever the request depends on them. &quot;
-                &quot;If a tool returns a structured error, inspect it and decide whether a safe corrected retry is appropriate. &quot;
-                &quot;Never claim a tool succeeded when its result reports an error.&quot;
-            ),
-        },
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: user_query},
-    ]
-
-    tool_log = []
-
-    for round_number in range(1, max_rounds + 1):
-        response = model_request(messages)
-        assistant_message = response.choices[0].message
-
-        # Preserve the assistant tool-call message in the conversation.
-        messages.append(assistant_message.model_dump(exclude_none=True))
-
-        if not assistant_message.tool_calls:
-            result = {
-                &quot;query&quot;: user_query,
-                &quot;answer&quot;: assistant_message.content,
-                &quot;tool_log&quot;: tool_log,
-                &quot;rounds&quot;: round_number,
-            }
-            RESPONSE_CACHE[user_query] = result
-            return result
-
-        for tool_call in assistant_message.tool_calls:
-            name = tool_call.function.name
-            try:
-                arguments = json.loads(tool_call.function.arguments)
-            except json.JSONDecodeError as exc:
-                arguments = {}
-                tool_result = {
-                    &quot;status&quot;: &quot;error&quot;,
-                    &quot;error_type&quot;: &quot;JSONDecodeError&quot;,
-                    &quot;message&quot;: str(exc),
+                displayAlign: 'center',
+                messageStyle: 'none',
+                CommonHTML: {
+                    linebreaks: {
+                    automatic: true
+                    }
                 }
-            else:
-                tool_result = dispatch_tool(name, arguments)
+            });
 
-            succeeded = tool_result.get(&quot;status&quot;) == &quot;ok&quot;
-            tool_log.append({
-                &quot;round&quot;: round_number,
-                &quot;tool&quot;: name,
-                &quot;arguments&quot;: arguments,
-                &quot;succeeded&quot;: succeeded,
-                &quot;result&quot;: tool_result,
-            })
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+    }
+    init_mathjax();
+    </script>
+<!-- End of mathjax configuration --><script type="module">
+  document.addEventListener("DOMContentLoaded", async () => {
+    const diagrams = document.querySelectorAll(".jp-Mermaid > pre.mermaid");
+    // do not load mermaidjs if not needed
+    if (!diagrams.length) {
+      return;
+    }
+    const mermaid = (await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.0/mermaid.esm.min.mjs")).default;
+    const elkUrl = "https://cdnjs.cloudflare.com/ajax/libs/mermaid-layout-elk/0.1.9/mermaid-layout-elk.esm.min.mjs";
+    if(elkUrl) {
+      const elkLayouts = (await import(elkUrl)).default;
+      mermaid.registerLayoutLoaders(elkLayouts);
+    }
+    const parser = new DOMParser();
 
-            messages.append({
-                &quot;role&quot;: &quot;tool&quot;,
-                &quot;tool_call_id&quot;: tool_call.id,
-                &quot;content&quot;: json.dumps(tool_result),
-            })
+    mermaid.initialize({
+      maxTextSize: 100000,
+      maxEdges: 100000,
+      startOnLoad: false,
+      fontFamily: window
+        .getComputedStyle(document.body)
+        .getPropertyValue("--jp-ui-font-family"),
+      theme: document.querySelector("body[data-jp-theme-light='true']")
+        ? "default"
+        : "dark",
+    });
 
-    raise RuntimeError(f&quot;Agent exceeded max_rounds={max_rounds} without a final answer.&quot;)
+    let _nextMermaidId = 0;
 
-def print_run(result: dict) -&gt; None:
-    print(&quot;QUERY:&quot;)
-    print(result[&quot;query&quot;])
-    print(&quot;\nTOOL CALL LOG:&quot;)
-    if not result[&quot;tool_log&quot;]:
-        print(&quot;  (no tool calls)&quot;)
-    for i, entry in enumerate(result[&quot;tool_log&quot;], start=1):
-        print(f&quot;  {i}. tool={entry['tool']}&quot;)
-        print(f&quot;     arguments={json.dumps(entry['arguments'])}&quot;)
-        print(f&quot;     succeeded={entry['succeeded']}&quot;)
-        print(f&quot;     result={json.dumps(entry['result'])}&quot;)
-    print(&quot;\nFINAL ANSWER:&quot;)
-    print(result[&quot;answer&quot;])</code></pre></section><section class="cell markdown"><h2>5. Evaluation</h2><div class='spacer'></div><p>The following queries are designed to exercise every tool. The fourth query requires two tools in sequence.</p><div class='spacer'></div><p>Because these are live model calls, the saved notebook output after execution is the measured evidence for which tool Gemini selected and what arguments it generated.</p></section><section class="cell codecell"><div class="prompt">In [7]:</div><pre class="code"><code>evaluation_queries = [
-    &quot;Use the course reference tool to give me the checklist for schema design.&quot;,
-    &quot;Convert 5280 feet to miles using the conversion tool.&quot;,
-    &quot;Use the guarded Python tool to calculate (17 * 23) + 11.&quot;,
-    (
-        &quot;First use the guarded Python tool to calculate 144 * 3. &quot;
-        &quot;Then convert that result from centimeters to meters using the conversion tool. &quot;
-        &quot;Use both tools rather than doing either step mentally.&quot;
-    ),
+    function makeMermaidImage(svg) {
+      const img = document.createElement("img");
+      const doc = parser.parseFromString(svg, "image/svg+xml");
+      const svgEl = doc.querySelector("svg");
+      const { maxWidth } = svgEl?.style || {};
+      const firstTitle = doc.querySelector("title");
+      const firstDesc = doc.querySelector("desc");
+
+      img.setAttribute("src", `data:image/svg+xml,${encodeURIComponent(svg)}`);
+      if (maxWidth) {
+        img.width = parseInt(maxWidth);
+      }
+      if (firstTitle) {
+        img.setAttribute("alt", firstTitle.textContent);
+      }
+      if (firstDesc) {
+        const caption = document.createElement("figcaption");
+        caption.className = "sr-only";
+        caption.textContent = firstDesc.textContent;
+        return [img, caption];
+      }
+      return [img];
+    }
+
+    async function makeMermaidError(text) {
+      let errorMessage = "";
+      try {
+        await mermaid.parse(text);
+      } catch (err) {
+        errorMessage = `${err}`;
+      }
+
+      const result = document.createElement("details");
+      result.className = 'jp-RenderedMermaid-Details';
+      const summary = document.createElement("summary");
+      summary.className = 'jp-RenderedMermaid-Summary';
+      const pre = document.createElement("pre");
+      const code = document.createElement("code");
+      code.innerText = text;
+      pre.appendChild(code);
+      summary.appendChild(pre);
+      result.appendChild(summary);
+
+      const warning = document.createElement("pre");
+      warning.innerText = errorMessage;
+      result.appendChild(warning);
+      return [result];
+    }
+
+    async function renderOneMarmaid(src) {
+      const id = `jp-mermaid-${_nextMermaidId++}`;
+      const parent = src.parentNode;
+      let raw = src.textContent.trim();
+      const el = document.createElement("div");
+      el.style.visibility = "hidden";
+      document.body.appendChild(el);
+      let results = null;
+      let output = null;
+      try {
+        let { svg } = await mermaid.render(id, raw, el);
+        svg = cleanMermaidSvg(svg);
+        results = makeMermaidImage(svg);
+        output = document.createElement("figure");
+        results.map(output.appendChild, output);
+      } catch (err) {
+        parent.classList.add("jp-mod-warning");
+        results = await makeMermaidError(raw);
+        output = results[0];
+      } finally {
+        el.remove();
+      }
+      parent.classList.add("jp-RenderedMermaid");
+      parent.appendChild(output);
+    }
+
+
+    /**
+     * Post-process to ensure mermaid diagrams contain only valid SVG and XHTML.
+     */
+    function cleanMermaidSvg(svg) {
+      svg = svg.replace(RE_VOID_ELEMENT, replaceVoidElement);
+      return `${SVG_XML_HEADER}${svg}`;
+    }
+
+
+    /**
+     * A regular expression for all void elements, which may include attributes and
+     * a slash.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Glossary/Void_element
+     *
+     * Of these, only `<br>` is generated by Mermaid in place of `\n`,
+     * but _any_ "malformed" tag will break the SVG rendering entirely.
+     */
+    const RE_VOID_ELEMENT =
+      /<\s*(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\s*([^>]*?)\s*>/gi;
+
+    /**
+     * Ensure a void element is closed with a slash, preserving any attributes.
+     */
+    function replaceVoidElement(match, tag, rest) {
+      rest = rest.trim();
+      if (!rest.endsWith('/')) {
+        rest = `${rest} /`;
+      }
+      return `<${tag} ${rest}>`;
+    }
+
+
+  /**
+   * Named HTML entities with their decimal equivalent codes.
+   *
+   * @see https://www.w3.org/TR/WD-html40-970708/sgml/entities.html
+   * */
+  const HTML_ENTITIES = `<!ENTITY Aacute "&#193;">
+<!ENTITY aacute "&#225;">
+<!ENTITY Acirc "&#194;">
+<!ENTITY acirc "&#226;">
+<!ENTITY acute "&#180;">
+<!ENTITY AElig "&#198;">
+<!ENTITY aelig "&#230;">
+<!ENTITY Agrave "&#192;">
+<!ENTITY agrave "&#224;">
+<!ENTITY alefsym "&#8501;">
+<!ENTITY Alpha "&#913;">
+<!ENTITY alpha "&#945;">
+<!ENTITY amp "&#38;">
+<!ENTITY and "&#8869;">
+<!ENTITY ang "&#8736;">
+<!ENTITY Aring "&#197;">
+<!ENTITY aring "&#229;">
+<!ENTITY asymp "&#8776;">
+<!ENTITY Atilde "&#195;">
+<!ENTITY atilde "&#227;">
+<!ENTITY Auml "&#196;">
+<!ENTITY auml "&#228;">
+<!ENTITY bdquo "&#8222;">
+<!ENTITY Beta "&#914;">
+<!ENTITY beta "&#946;">
+<!ENTITY brvbar "&#166;">
+<!ENTITY bull "&#8226;">
+<!ENTITY cap "&#8745;">
+<!ENTITY Ccedil "&#199;">
+<!ENTITY ccedil "&#231;">
+<!ENTITY cedil "&#184;">
+<!ENTITY cent "&#162;">
+<!ENTITY Chi "&#935;">
+<!ENTITY chi "&#967;">
+<!ENTITY circ "&#710;">
+<!ENTITY clubs "&#9827;">
+<!ENTITY cong "&#8773;">
+<!ENTITY copy "&#169;">
+<!ENTITY crarr "&#8629;">
+<!ENTITY cup "&#8746;">
+<!ENTITY curren "&#164;">
+<!ENTITY dagger "&#8224;">
+<!ENTITY Dagger "&#8225;">
+<!ENTITY darr "&#8595;">
+<!ENTITY dArr "&#8659;">
+<!ENTITY deg "&#176;">
+<!ENTITY Delta "&#916;">
+<!ENTITY delta "&#948;">
+<!ENTITY diams "&#9830;">
+<!ENTITY divide "&#247;">
+<!ENTITY Eacute "&#201;">
+<!ENTITY eacute "&#233;">
+<!ENTITY Ecirc "&#202;">
+<!ENTITY ecirc "&#234;">
+<!ENTITY Egrave "&#200;">
+<!ENTITY egrave "&#232;">
+<!ENTITY empty "&#8709;">
+<!ENTITY emsp "&#8195;">
+<!ENTITY ensp "&#8194;">
+<!ENTITY epsilon "&#949;">
+<!ENTITY Epsilon "&#917;">
+<!ENTITY equiv "&#8801;">
+<!ENTITY Eta "&#919;">
+<!ENTITY eta "&#951;">
+<!ENTITY ETH "&#208;">
+<!ENTITY eth "&#240;">
+<!ENTITY Euml "&#203;">
+<!ENTITY euml "&#235;">
+<!ENTITY exist "&#8707;">
+<!ENTITY fnof "&#402;">
+<!ENTITY forall "&#8704;">
+<!ENTITY frac12 "&#189;">
+<!ENTITY frac14 "&#188;">
+<!ENTITY frac34 "&#190;">
+<!ENTITY frasl "&#8260;">
+<!ENTITY Gamma "&#915;">
+<!ENTITY gamma "&#947;">
+<!ENTITY ge "&#8805;">
+<!ENTITY gt "&#62;">
+<!ENTITY harr "&#8596;">
+<!ENTITY hArr "&#8660;">
+<!ENTITY hearts "&#9829;">
+<!ENTITY hellip "&#8230;">
+<!ENTITY Iacute "&#205;">
+<!ENTITY iacute "&#237;">
+<!ENTITY Icirc "&#206;">
+<!ENTITY icirc "&#238;">
+<!ENTITY iexcl "&#161;">
+<!ENTITY Igrave "&#204;">
+<!ENTITY igrave "&#236;">
+<!ENTITY image "&#8465;">
+<!ENTITY infin "&#8734;">
+<!ENTITY int "&#8747;">
+<!ENTITY Iota "&#921;">
+<!ENTITY iota "&#953;">
+<!ENTITY iquest "&#191;">
+<!ENTITY isin "&#8712;">
+<!ENTITY Iuml "&#207;">
+<!ENTITY iuml "&#239;">
+<!ENTITY Kappa "&#922;">
+<!ENTITY kappa "&#954;">
+<!ENTITY Lambda "&#923;">
+<!ENTITY lambda "&#955;">
+<!ENTITY lang "&#9001;">
+<!ENTITY laquo "&#171;">
+<!ENTITY larr "&#8592;">
+<!ENTITY lArr "&#8656;">
+<!ENTITY lceil "&#8968;">
+<!ENTITY ldquo "&#8220;">
+<!ENTITY le "&#8804;">
+<!ENTITY lfloor "&#8970;">
+<!ENTITY lowast "&#8727;">
+<!ENTITY loz "&#9674;">
+<!ENTITY lrm "&#8206;">
+<!ENTITY lsaquo "&#8249;">
+<!ENTITY lsquo "&#8216;">
+<!ENTITY lt "&#60;">
+<!ENTITY macr "&#175;">
+<!ENTITY mdash "&#8212;">
+<!ENTITY micro "&#181;">
+<!ENTITY middot "&#183;">
+<!ENTITY minus "&#8722;">
+<!ENTITY Mu "&#924;">
+<!ENTITY mu "&#956;">
+<!ENTITY nabla "&#8711;">
+<!ENTITY nbsp "&#160;">
+<!ENTITY ndash "&#8211;">
+<!ENTITY ne "&#8800;">
+<!ENTITY ni "&#8715;">
+<!ENTITY not "&#172;">
+<!ENTITY notin "&#8713;">
+<!ENTITY nsub "&#8836;">
+<!ENTITY Ntilde "&#209;">
+<!ENTITY ntilde "&#241;">
+<!ENTITY Nu "&#925;">
+<!ENTITY nu "&#957;">
+<!ENTITY Oacute "&#211;">
+<!ENTITY oacute "&#243;">
+<!ENTITY Ocirc "&#212;">
+<!ENTITY ocirc "&#244;">
+<!ENTITY OElig "&#338;">
+<!ENTITY oelig "&#339;">
+<!ENTITY Ograve "&#210;">
+<!ENTITY ograve "&#242;">
+<!ENTITY oline "&#8254;">
+<!ENTITY Omega "&#937;">
+<!ENTITY omega "&#969;">
+<!ENTITY Omicron "&#927;">
+<!ENTITY omicron "&#959;">
+<!ENTITY oplus "&#8853;">
+<!ENTITY or "&#8870;">
+<!ENTITY ordf "&#170;">
+<!ENTITY ordm "&#186;">
+<!ENTITY Oslash "&#216;">
+<!ENTITY oslash "&#248;">
+<!ENTITY Otilde "&#213;">
+<!ENTITY otilde "&#245;">
+<!ENTITY otimes "&#8855;">
+<!ENTITY Ouml "&#214;">
+<!ENTITY ouml "&#246;">
+<!ENTITY para "&#182;">
+<!ENTITY part "&#8706;">
+<!ENTITY permil "&#8240;">
+<!ENTITY perp "&#8869;">
+<!ENTITY Phi "&#934;">
+<!ENTITY phi "&#966;">
+<!ENTITY Pi "&#928;">
+<!ENTITY pi "&#960;">
+<!ENTITY piv "&#982;">
+<!ENTITY plusmn "&#177;">
+<!ENTITY pound "&#163;">
+<!ENTITY prime "&#8242;">
+<!ENTITY Prime "&#8243;">
+<!ENTITY prod "&#8719;">
+<!ENTITY prop "&#8733;">
+<!ENTITY Psi "&#936;">
+<!ENTITY psi "&#968;">
+<!ENTITY quot "&#34;">
+<!ENTITY radic "&#8730;">
+<!ENTITY rang "&#9002;">
+<!ENTITY raquo "&#187;">
+<!ENTITY rarr "&#8594;">
+<!ENTITY rArr "&#8658;">
+<!ENTITY rceil "&#8969;">
+<!ENTITY rdquo "&#8221;">
+<!ENTITY real "&#8476;">
+<!ENTITY reg "&#174;">
+<!ENTITY rfloor "&#8971;">
+<!ENTITY Rho "&#929;">
+<!ENTITY rho "&#961;">
+<!ENTITY rlm "&#8207;">
+<!ENTITY rsaquo "&#8250;">
+<!ENTITY rsquo "&#8217;">
+<!ENTITY sbquo "&#8218;">
+<!ENTITY Scaron "&#352;">
+<!ENTITY scaron "&#353;">
+<!ENTITY sdot "&#8901;">
+<!ENTITY sect "&#167;">
+<!ENTITY shy "&#173;">
+<!ENTITY Sigma "&#931;">
+<!ENTITY sigma "&#963;">
+<!ENTITY sigmaf "&#962;">
+<!ENTITY sim "&#8764;">
+<!ENTITY spades "&#9824;">
+<!ENTITY sub "&#8834;">
+<!ENTITY sube "&#8838;">
+<!ENTITY sum "&#8721;">
+<!ENTITY sup "&#8835;">
+<!ENTITY sup1 "&#185;">
+<!ENTITY sup2 "&#178;">
+<!ENTITY sup3 "&#179;">
+<!ENTITY supe "&#8839;">
+<!ENTITY szlig "&#223;">
+<!ENTITY Tau "&#932;">
+<!ENTITY tau "&#964;">
+<!ENTITY there4 "&#8756;">
+<!ENTITY Theta "&#920;">
+<!ENTITY theta "&#952;">
+<!ENTITY thetasym "&#977;">
+<!ENTITY thinsp "&#8201;">
+<!ENTITY THORN "&#222;">
+<!ENTITY thorn "&#254;">
+<!ENTITY tilde "&#732;">
+<!ENTITY times "&#215;">
+<!ENTITY trade "&#8482;">
+<!ENTITY Uacute "&#218;">
+<!ENTITY uacute "&#250;">
+<!ENTITY uarr "&#8593;">
+<!ENTITY uArr "&#8657;">
+<!ENTITY Ucirc "&#219;">
+<!ENTITY ucirc "&#251;">
+<!ENTITY Ugrave "&#217;">
+<!ENTITY ugrave "&#249;">
+<!ENTITY uml "&#168;">
+<!ENTITY upsih "&#978;">
+<!ENTITY Upsilon "&#933;">
+<!ENTITY upsilon "&#965;">
+<!ENTITY Uuml "&#220;">
+<!ENTITY uuml "&#252;">
+<!ENTITY weierp "&#8472;">
+<!ENTITY Xi "&#926;">
+<!ENTITY xi "&#958;">
+<!ENTITY Yacute "&#221;">
+<!ENTITY yacute "&#253;">
+<!ENTITY yen "&#165;">
+<!ENTITY Yuml "&#376;">
+<!ENTITY yuml "&#255;">
+<!ENTITY Zeta "&#918;">
+<!ENTITY zeta "&#950;">
+<!ENTITY zwj "&#8205;">
+<!ENTITY zwnj "&#8204;">`.replace(/\n/g, ' ');
+
+  /**
+   * A reasonably strict xml declaration.
+   */
+  const XML_DECL = '<?xml version="1.0" standalone="no"?>';
+
+  /**
+   * The beginning of the XML doctype declaration.
+   */
+  const DOCTYPE_START = `<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [`;
+
+  /**
+   * The end of the XML docype declaration.
+   */
+  const DOCTYPE_END = ']>';
+
+  /**
+   * A full header for an SVG XML document.
+   */
+  const SVG_XML_HEADER = `${XML_DECL}
+    ${DOCTYPE_START}${HTML_ENTITIES}${DOCTYPE_END}`;
+
+    void Promise.all([...diagrams].map(renderOneMarmaid));
+  });
+</script>
+<style>
+  .jp-Mermaid:not(.jp-RenderedMermaid) {
+    display: none;
+  }
+
+  .jp-RenderedMermaid {
+    overflow: auto;
+    display: flex;
+  }
+
+  .jp-RenderedMermaid.jp-mod-warning {
+    width: auto;
+    padding: 0.5em;
+    margin-top: 0.5em;
+    border: var(--jp-border-width) solid var(--jp-warn-color2);
+    border-radius: var(--jp-border-radius);
+    color: var(--jp-ui-font-color1);
+    font-size: var(--jp-ui-font-size1);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .jp-RenderedMermaid figure {
+    margin: 0;
+    overflow: auto;
+    max-width: 100%;
+  }
+
+  .jp-RenderedMermaid img {
+    max-width: 100%;
+  }
+
+  .jp-RenderedMermaid-Details > pre {
+    margin-top: 1em;
+  }
+
+  .jp-RenderedMermaid-Summary {
+    color: var(--jp-warn-color2);
+  }
+
+  .jp-RenderedMermaid:not(.jp-mod-warning) pre {
+    display: none;
+  }
+
+  .jp-RenderedMermaid-Summary > pre {
+    display: inline-block;
+    white-space: normal;
+  }
+</style>
+<!-- End of mermaid configuration --></head>
+<body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
+<main>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b3ae136c">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><a href="https://colab.research.google.com/github/mschemerii/cosc-650-applied-llm-systems/blob/week4-assignment-notebook-fixes/week-04/week4_tool_calling_agent.ipynb" target="_parent"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg"/></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=04EkxCQ6IoQU">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h1 id="Week-4-%E2%80%94-Tool-Calling:-From-Model-to-Agent">Week 4 — Tool Calling: From Model to Agent<a class="anchor-link" href="#Week-4-%E2%80%94-Tool-Calling:-From-Model-to-Agent">¶</a></h1><p><strong>COSC 650 — Applied LLM Systems</strong></p>
+<p>This notebook implements an end-to-end function-calling loop using the Gemini Flash model through Google's OpenAI-compatible endpoint. The assistant can choose among three constrained tools, receive tool results, and continue reasoning until it produces a final answer.</p>
+<h2 id="Assignment-coverage">Assignment coverage<a class="anchor-link" href="#Assignment-coverage">¶</a></h2><ul>
+<li><strong>Part 1:</strong> Three tools with constrained JSON schemas using enums, required fields, and explicit types.</li>
+<li><strong>Part 2:</strong> A guarded code-runner that permits arithmetic expressions only, validates the model-supplied code before execution, and enforces a time limit.</li>
+<li><strong>Part 3:</strong> Evaluation queries covering all three tools, including a two-tool sequence, with a visible tool-call log.</li>
+<li><strong>Part 4:</strong> A real runtime failure (<code>10 / 0</code>) that returns a structured error and is recovered through a retry.</li>
+<li><strong>Part 5:</strong> Repository documentation and GitHub issue #15 document the design and failure/recovery case.</li>
+</ul>
+<p>The live Gemini calls and reported outputs should be generated by running this notebook. Do not treat unexecuted example text as measured results.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fA19m9rxIoQV">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="1.-Setup">1. Setup<a class="anchor-link" href="#1.-Setup">¶</a></h2><p>The assignment specifies Gemini Flash through the OpenAI-compatible endpoint. The API key is loaded without being written into the notebook.</p>
+<p>In Google Colab, store <code>GEMINI_API_KEY</code> in the <strong>Secrets</strong> panel. The setup cell first checks the environment and then falls back to Colab Secrets. The same notebook can therefore run in Colab or a local Jupyter environment.</p>
+<p>The default model is <code>gemini-3.5-flash-lite</code>, a stable Flash-Lite model suited to high-volume function-calling work. You can override it without editing the notebook by setting a <code>GEMINI_MODEL</code> environment variable.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=GgFb8B2MIoQV">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="err">!</span><span class="n">pip</span> <span class="o">-</span><span class="n">q</span> <span class="n">install</span> <span class="n">openai</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=L1AZcqP_IoQW">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ast</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="c1"># Read the API key from a normal environment variable first.</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"GEMINI_API_KEY"</span><span class="p">)</span>
+
+<span class="c1"># In Colab, Secrets are not automatically exposed through os.environ.</span>
+<span class="c1"># Fall back to Colab's userdata API when available.</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">API_KEY</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">userdata</span>
+        <span class="n">API_KEY</span> <span class="o">=</span> <span class="n">userdata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"GEMINI_API_KEY"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">API_KEY</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">API_KEY</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+        <span class="s2">"GEMINI_API_KEY was not found. In Colab, add it under Secrets and "</span>
+        <span class="s2">"enable notebook access for the secret."</span>
+    <span class="p">)</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="n">API_KEY</span><span class="p">,</span>
+    <span class="n">base_url</span><span class="o">=</span><span class="s2">"https://generativelanguage.googleapis.com/v1beta/openai/"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Stable, high-volume default. Override with GEMINI_MODEL if your project</span>
+<span class="c1"># has access to a different Gemini Flash model.</span>
+<span class="n">MODEL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"GEMINI_MODEL"</span><span class="p">,</span> <span class="s2">"gemini-3.5-flash-lite"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Client configured for:"</span><span class="p">,</span> <span class="n">MODEL</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Client configured for: gemini-3.5-flash-lite
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=XvizjJs7IoQW">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="2.-Tool-schemas">2. Tool schemas<a class="anchor-link" href="#2.-Tool-schemas">¶</a></h2><p>Each tool schema uses:</p>
+<ul>
+<li>a required-field list,</li>
+<li>explicit JSON types,</li>
+<li>enums where a small closed set is appropriate, and</li>
+<li><code>additionalProperties: false</code> to prevent the model from inventing extra arguments.</li>
+</ul>
+<p>The three tools are:</p>
+<ol>
+<li><code>lookup_course_reference</code> — returns a small local reference entry about function calling.</li>
+<li><code>convert_length</code> — converts a numeric distance among a fixed set of units.</li>
+<li><code>run_guarded_python</code> — evaluates one arithmetic expression after validation by an allowlist guardrail.</li>
+</ol>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=SufqxmySIoQW">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="n">TOOLS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"function"</span><span class="p">,</span>
+        <span class="s2">"function"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"lookup_course_reference"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Look up a concise local reference for Week 4 concepts. "</span>
+                <span class="s2">"Use only one of the supported topics and one detail level."</span>
+            <span class="p">),</span>
+            <span class="s2">"parameters"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"topic"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                        <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"tool_calling"</span><span class="p">,</span> <span class="s2">"schema_design"</span><span class="p">,</span> <span class="s2">"guardrails"</span><span class="p">],</span>
+                    <span class="p">},</span>
+                    <span class="s2">"detail"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                        <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"summary"</span><span class="p">,</span> <span class="s2">"checklist"</span><span class="p">],</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"topic"</span><span class="p">,</span> <span class="s2">"detail"</span><span class="p">],</span>
+                <span class="s2">"additionalProperties"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"function"</span><span class="p">,</span>
+        <span class="s2">"function"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"convert_length"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Convert one numeric length between supported units. "</span>
+                <span class="s2">"Use this instead of estimating the conversion."</span>
+            <span class="p">),</span>
+            <span class="s2">"parameters"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"value"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"number"</span><span class="p">},</span>
+                    <span class="s2">"from_unit"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                        <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"millimeters"</span><span class="p">,</span> <span class="s2">"centimeters"</span><span class="p">,</span> <span class="s2">"meters"</span><span class="p">,</span> <span class="s2">"kilometers"</span><span class="p">,</span> <span class="s2">"inches"</span><span class="p">,</span> <span class="s2">"feet"</span><span class="p">,</span> <span class="s2">"miles"</span><span class="p">],</span>
+                    <span class="p">},</span>
+                    <span class="s2">"to_unit"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                        <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"millimeters"</span><span class="p">,</span> <span class="s2">"centimeters"</span><span class="p">,</span> <span class="s2">"meters"</span><span class="p">,</span> <span class="s2">"kilometers"</span><span class="p">,</span> <span class="s2">"inches"</span><span class="p">,</span> <span class="s2">"feet"</span><span class="p">,</span> <span class="s2">"miles"</span><span class="p">],</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"value"</span><span class="p">,</span> <span class="s2">"from_unit"</span><span class="p">,</span> <span class="s2">"to_unit"</span><span class="p">],</span>
+                <span class="s2">"additionalProperties"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"function"</span><span class="p">,</span>
+        <span class="s2">"function"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"run_guarded_python"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Evaluate exactly one numeric arithmetic expression. "</span>
+                <span class="s2">"Only arithmetic is permitted; do not use names, imports, files, network access, "</span>
+                <span class="s2">"function calls, attribute access, indexing, or process operations."</span>
+            <span class="p">),</span>
+            <span class="s2">"parameters"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"task"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                        <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"arithmetic"</span><span class="p">],</span>
+                    <span class="p">},</span>
+                    <span class="s2">"code"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"One Python arithmetic expression such as (17 * 23) + 11."</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+                <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"task"</span><span class="p">,</span> <span class="s2">"code"</span><span class="p">],</span>
+                <span class="s2">"additionalProperties"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">TOOLS</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>[
+  {
+    "type": "function",
+    "function": {
+      "name": "lookup_course_reference",
+      "description": "Look up a concise local reference for Week 4 concepts. Use only one of the supported topics and one detail level.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "enum": [
+              "tool_calling",
+              "schema_design",
+              "guardrails"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "checklist"
+            ]
+          }
+        },
+        "required": [
+          "topic",
+          "detail"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "convert_length",
+      "description": "Convert one numeric length between supported units. Use this instead of estimating the conversion.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number"
+          },
+          "from_unit": {
+            "type": "string",
+            "enum": [
+              "millimeters",
+              "centimeters",
+              "meters",
+              "kilometers",
+              "inches",
+              "feet",
+              "miles"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "enum": [
+              "millimeters",
+              "centimeters",
+              "meters",
+              "kilometers",
+              "inches",
+              "feet",
+              "miles"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "run_guarded_python",
+      "description": "Evaluate exactly one numeric arithmetic expression. Only arithmetic is permitted; do not use names, imports, files, network access, function calls, attribute access, indexing, or process operations.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "string",
+            "enum": [
+              "arithmetic"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "One Python arithmetic expression such as (17 * 23) + 11."
+          }
+        },
+        "required": [
+          "task",
+          "code"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
 ]
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=OpYFHS-0IoQW">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="3.-Tool-implementations">3. Tool implementations<a class="anchor-link" href="#3.-Tool-implementations">¶</a></h2><h3 id="Local-reference-and-conversion-tools">Local reference and conversion tools<a class="anchor-link" href="#Local-reference-and-conversion-tools">¶</a></h3><p>These tools are intentionally deterministic and local. They do not need network access, which keeps the experiment focused on function calling rather than external API behavior.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=DLZBNr7BIoQW">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="n">COURSE_REFERENCE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"tool_calling"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"summary"</span><span class="p">:</span> <span class="s2">"A model becomes agent-like when it can choose a tool, receive its result, and decide what to do next."</span><span class="p">,</span>
+        <span class="s2">"checklist"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"Send tool schemas with the model request."</span><span class="p">,</span>
+            <span class="s2">"Inspect returned tool calls."</span><span class="p">,</span>
+            <span class="s2">"Execute the selected tool."</span><span class="p">,</span>
+            <span class="s2">"Append the tool result to the conversation."</span><span class="p">,</span>
+            <span class="s2">"Call the model again so it can continue."</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">"schema_design"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"summary"</span><span class="p">:</span> <span class="s2">"Tight schemas constrain what arguments a model may send and reduce ambiguous or invented structures."</span><span class="p">,</span>
+        <span class="s2">"checklist"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"Use explicit JSON types."</span><span class="p">,</span>
+            <span class="s2">"Mark required fields."</span><span class="p">,</span>
+            <span class="s2">"Use enums for closed choices."</span><span class="p">,</span>
+            <span class="s2">"Reject unexpected properties."</span><span class="p">,</span>
+            <span class="s2">"Keep structures as simple as the task allows."</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">"guardrails"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"summary"</span><span class="p">:</span> <span class="s2">"A guardrail checks model-suggested actions before execution and blocks categories outside the intended capability."</span><span class="p">,</span>
+        <span class="s2">"checklist"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"Define an allowlist."</span><span class="p">,</span>
+            <span class="s2">"Validate before execution."</span><span class="p">,</span>
+            <span class="s2">"Return structured errors."</span><span class="p">,</span>
+            <span class="s2">"Limit execution time."</span><span class="p">,</span>
+            <span class="s2">"State clearly what is blocked."</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">},</span>
+<span class="p">}</span>
 
-evaluation_results = []
+<span class="n">METERS_PER_UNIT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"millimeters"</span><span class="p">:</span> <span class="mf">0.001</span><span class="p">,</span>
+    <span class="s2">"centimeters"</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
+    <span class="s2">"meters"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="s2">"kilometers"</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>
+    <span class="s2">"inches"</span><span class="p">:</span> <span class="mf">0.0254</span><span class="p">,</span>
+    <span class="s2">"feet"</span><span class="p">:</span> <span class="mf">0.3048</span><span class="p">,</span>
+    <span class="s2">"miles"</span><span class="p">:</span> <span class="mf">1609.344</span><span class="p">,</span>
+<span class="p">}</span>
 
-for index, query in enumerate(evaluation_queries):
-    print(&quot;=&quot; * 90)
-    result = run_agent(query)
-    evaluation_results.append(result)
-    print_run(result)
-    print()
+<span class="k">def</span><span class="w"> </span><span class="nf">lookup_course_reference</span><span class="p">(</span><span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">detail</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span>
+        <span class="s2">"topic"</span><span class="p">:</span> <span class="n">topic</span><span class="p">,</span>
+        <span class="s2">"detail"</span><span class="p">:</span> <span class="n">detail</span><span class="p">,</span>
+        <span class="s2">"content"</span><span class="p">:</span> <span class="n">COURSE_REFERENCE</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">detail</span><span class="p">],</span>
+    <span class="p">}</span>
 
-    # Space out independent evaluation queries to reduce burst rate-limit pressure.
-    # Skip the sleep after the final query.
-    if index &lt; len(evaluation_queries) - 1:
-        time.sleep(5)</code></pre><pre class="output">==========================================================================================
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_length</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">from_unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">meters</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="n">METERS_PER_UNIT</span><span class="p">[</span><span class="n">from_unit</span><span class="p">]</span>
+    <span class="n">converted</span> <span class="o">=</span> <span class="n">meters</span> <span class="o">/</span> <span class="n">METERS_PER_UNIT</span><span class="p">[</span><span class="n">to_unit</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span>
+        <span class="s2">"input"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"value"</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span> <span class="s2">"unit"</span><span class="p">:</span> <span class="n">from_unit</span><span class="p">},</span>
+        <span class="s2">"output"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"value"</span><span class="p">:</span> <span class="n">converted</span><span class="p">,</span> <span class="s2">"unit"</span><span class="p">:</span> <span class="n">to_unit</span><span class="p">},</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=rQEFlPvfIoQX">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Guarded-code-runner">Guarded code runner<a class="anchor-link" href="#Guarded-code-runner">¶</a></h3><p>The code runner is deliberately narrow.</p>
+<p><strong>Permitted</strong></p>
+<ul>
+<li>numeric constants,</li>
+<li>parentheses,</li>
+<li>arithmetic operators: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>//</code>, <code>%</code>, and <code>**</code>,</li>
+<li>unary <code>+</code> and <code>-</code>.</li>
+</ul>
+<p><strong>Blocked categories</strong></p>
+<ul>
+<li>filesystem access,</li>
+<li>network access,</li>
+<li>imports,</li>
+<li>function or method calls,</li>
+<li>variable/name access,</li>
+<li>attribute access,</li>
+<li>indexing/subscripts,</li>
+<li>loops, assignments, comprehensions, and control flow,</li>
+<li>model-supplied process execution.</li>
+</ul>
+<p>The runner parses the expression with Python's AST module and rejects any node that is not on the allowlist. Execution occurs with empty built-ins in a separate worker process. The parent terminates the worker if it exceeds the time limit. This is a focused classroom guardrail, <strong>not</strong> a production sandbox.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=DkpUee98IoQX">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="n">ALLOWED_AST_NODES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Expression</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">BinOp</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">UnaryOp</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Add</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Sub</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Mult</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Div</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">FloorDiv</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Mod</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">Pow</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">USub</span><span class="p">,</span>
+    <span class="n">ast</span><span class="o">.</span><span class="n">UAdd</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_arithmetic_expression</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ast</span><span class="o">.</span><span class="n">AST</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"eval"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Syntax error: </span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">msg</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">ast</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ALLOWED_AST_NODES</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Blocked AST node: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. "</span>
+                <span class="s2">"Only numeric arithmetic expressions are allowed."</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">Constant</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Only integer and floating-point numeric constants are allowed."</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tree</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_arithmetic_worker</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_queue</span><span class="p">:</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">validate_arithmetic_expression</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">compiled</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s2">"&lt;guarded-arithmetic&gt;"</span><span class="p">,</span> <span class="s2">"eval"</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">compiled</span><span class="p">,</span> <span class="p">{</span><span class="s2">"__builtins__"</span><span class="p">:</span> <span class="p">{}},</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Result must be numeric."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Result must be finite."</span><span class="p">)</span>
+        <span class="n">output_queue</span><span class="o">.</span><span class="n">put</span><span class="p">({</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span> <span class="s2">"result"</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">output_queue</span><span class="o">.</span><span class="n">put</span><span class="p">({</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"error_type"</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span>
+        <span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_guarded_python</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">task</span> <span class="o">!=</span> <span class="s2">"arithmetic"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"error_type"</span><span class="p">:</span> <span class="s2">"UnsupportedTask"</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Only the arithmetic task is permitted."</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="c1"># Validate in the parent before any worker starts.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validate_arithmetic_expression</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"error_type"</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="n">queue</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="n">process</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_arithmetic_worker</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">queue</span><span class="p">))</span>
+    <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout_seconds</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">process</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"error_type"</span><span class="p">:</span> <span class="s2">"TimeoutError"</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Execution exceeded </span><span class="si">{</span><span class="n">timeout_seconds</span><span class="si">}</span><span class="s2"> seconds."</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">queue</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"error_type"</span><span class="p">:</span> <span class="s2">"ExecutionError"</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"The worker ended without returning a result."</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+<span class="c1"># Guardrail spot checks</span>
+<span class="n">guardrail_checks</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"allowed"</span><span class="p">:</span> <span class="n">run_guarded_python</span><span class="p">(</span><span class="s2">"arithmetic"</span><span class="p">,</span> <span class="s2">"(17 * 23) + 11"</span><span class="p">),</span>
+    <span class="s2">"blocked_function_call"</span><span class="p">:</span> <span class="n">run_guarded_python</span><span class="p">(</span><span class="s2">"arithmetic"</span><span class="p">,</span> <span class="s2">"__import__('os').system('echo unsafe')"</span><span class="p">),</span>
+    <span class="s2">"blocked_name"</span><span class="p">:</span> <span class="n">run_guarded_python</span><span class="p">(</span><span class="s2">"arithmetic"</span><span class="p">,</span> <span class="s2">"open('/tmp/example.txt')"</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">guardrail_checks</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>{
+  "allowed": {
+    "status": "ok",
+    "result": 402
+  },
+  "blocked_function_call": {
+    "status": "error",
+    "error_type": "ValueError",
+    "message": "Blocked AST node: Call. Only numeric arithmetic expressions are allowed."
+  },
+  "blocked_name": {
+    "status": "error",
+    "error_type": "ValueError",
+    "message": "Blocked AST node: Call. Only numeric arithmetic expressions are allowed."
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=whD5aPwaIoQX">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="4.-Dispatcher-and-full-agent-loop">4. Dispatcher and full agent loop<a class="anchor-link" href="#4.-Dispatcher-and-full-agent-loop">¶</a></h2><p>The loop below is the key agent behavior:</p>
+<ol>
+<li>Send the conversation and tool schemas to the model.</li>
+<li>If the model returns one or more tool calls, record them.</li>
+<li>Execute each tool locally.</li>
+<li>Append each structured tool result to the conversation.</li>
+<li>Send the updated conversation back to the model.</li>
+<li>Repeat until the model returns a normal final answer or the maximum number of rounds is reached.</li>
+</ol>
+<p>Tool failures are returned to the model as data. They do not crash the agent loop.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=gd6KFWENIoQX">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">dispatch_tool</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"lookup_course_reference"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">lookup_course_reference</span><span class="p">(</span><span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"convert_length"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">convert_length</span><span class="p">(</span><span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"run_guarded_python"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">run_guarded_python</span><span class="p">(</span><span class="o">**</span><span class="n">arguments</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"error_type"</span><span class="p">:</span> <span class="s2">"UnknownTool"</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Unknown tool: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"error_type"</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">"message"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span>
+        <span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">model_request</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Call Gemini with bounded exponential backoff for transient/rate-limit failures."""</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span>
+                <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>
+                <span class="n">tools</span><span class="o">=</span><span class="n">TOOLS</span><span class="p">,</span>
+                <span class="n">tool_choice</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+            <span class="n">transient</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">"429"</span> <span class="ow">in</span> <span class="n">message</span>
+                <span class="ow">or</span> <span class="s2">"RESOURCE_EXHAUSTED"</span> <span class="ow">in</span> <span class="n">message</span>
+                <span class="ow">or</span> <span class="s2">"rate"</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="ow">or</span> <span class="s2">"500"</span> <span class="ow">in</span> <span class="n">message</span>
+                <span class="ow">or</span> <span class="s2">"502"</span> <span class="ow">in</span> <span class="n">message</span>
+                <span class="ow">or</span> <span class="s2">"503"</span> <span class="ow">in</span> <span class="n">message</span>
+                <span class="ow">or</span> <span class="s2">"504"</span> <span class="ow">in</span> <span class="n">message</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">transient</span> <span class="ow">or</span> <span class="n">attempt</span> <span class="o">==</span> <span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Transient API failure (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">). "</span>
+                <span class="sa">f</span><span class="s2">"Retrying in </span><span class="si">{</span><span class="n">delay</span><span class="si">}</span><span class="s2"> seconds..."</span>
+            <span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+            <span class="n">delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">delay</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+<span class="n">RESPONSE_CACHE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span><span class="n">user_query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">max_rounds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">use_cache</span> <span class="ow">and</span> <span class="n">user_query</span> <span class="ow">in</span> <span class="n">RESPONSE_CACHE</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Using cached result for this query."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RESPONSE_CACHE</span><span class="p">[</span><span class="n">user_query</span><span class="p">]</span>
+
+    <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"You are a careful Week 4 tool-calling assistant. "</span>
+                <span class="s2">"Use the supplied tools whenever the request depends on them. "</span>
+                <span class="s2">"If a tool returns a structured error, inspect it and decide whether a safe corrected retry is appropriate. "</span>
+                <span class="s2">"Never claim a tool succeeded when its result reports an error."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">user_query</span><span class="p">},</span>
+    <span class="p">]</span>
+
+    <span class="n">tool_log</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">round_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_rounds</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">model_request</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+        <span class="n">assistant_message</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span>
+
+        <span class="c1"># Preserve the assistant tool-call message in the conversation.</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">assistant_message</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">assistant_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">"query"</span><span class="p">:</span> <span class="n">user_query</span><span class="p">,</span>
+                <span class="s2">"answer"</span><span class="p">:</span> <span class="n">assistant_message</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
+                <span class="s2">"tool_log"</span><span class="p">:</span> <span class="n">tool_log</span><span class="p">,</span>
+                <span class="s2">"rounds"</span><span class="p">:</span> <span class="n">round_number</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">RESPONSE_CACHE</span><span class="p">[</span><span class="n">user_query</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">for</span> <span class="n">tool_call</span> <span class="ow">in</span> <span class="n">assistant_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">tool_call</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">arguments</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">tool_call</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">arguments</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">tool_result</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+                    <span class="s2">"error_type"</span><span class="p">:</span> <span class="s2">"JSONDecodeError"</span><span class="p">,</span>
+                    <span class="s2">"message"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tool_result</span> <span class="o">=</span> <span class="n">dispatch_tool</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+            <span class="n">succeeded</span> <span class="o">=</span> <span class="n">tool_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"ok"</span>
+            <span class="n">tool_log</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">"round"</span><span class="p">:</span> <span class="n">round_number</span><span class="p">,</span>
+                <span class="s2">"tool"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">"arguments"</span><span class="p">:</span> <span class="n">arguments</span><span class="p">,</span>
+                <span class="s2">"succeeded"</span><span class="p">:</span> <span class="n">succeeded</span><span class="p">,</span>
+                <span class="s2">"result"</span><span class="p">:</span> <span class="n">tool_result</span><span class="p">,</span>
+            <span class="p">})</span>
+
+            <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"tool"</span><span class="p">,</span>
+                <span class="s2">"tool_call_id"</span><span class="p">:</span> <span class="n">tool_call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tool_result</span><span class="p">),</span>
+            <span class="p">})</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Agent exceeded max_rounds=</span><span class="si">{</span><span class="n">max_rounds</span><span class="si">}</span><span class="s2"> without a final answer."</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">print_run</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"QUERY:"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"query"</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">TOOL CALL LOG:"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s2">"tool_log"</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  (no tool calls)"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"tool_log"</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. tool=</span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">'tool'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"     arguments=</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s1">'arguments'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"     succeeded=</span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">'succeeded'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"     result=</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s1">'result'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">FINAL ANSWER:"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"answer"</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=hCdazDCFIoQX">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="5.-Evaluation">5. Evaluation<a class="anchor-link" href="#5.-Evaluation">¶</a></h2><p>The following queries are designed to exercise every tool. The fourth query requires two tools in sequence.</p>
+<p>Because these are live model calls, the saved notebook output after execution is the measured evidence for which tool Gemini selected and what arguments it generated.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=pqLcFfFdIoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="n">evaluation_queries</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"Use the course reference tool to give me the checklist for schema design."</span><span class="p">,</span>
+    <span class="s2">"Convert 5280 feet to miles using the conversion tool."</span><span class="p">,</span>
+    <span class="s2">"Use the guarded Python tool to calculate (17 * 23) + 11."</span><span class="p">,</span>
+    <span class="p">(</span>
+        <span class="s2">"First use the guarded Python tool to calculate 144 * 3. "</span>
+        <span class="s2">"Then convert that result from centimeters to meters using the conversion tool. "</span>
+        <span class="s2">"Use both tools rather than doing either step mentally."</span>
+    <span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">evaluation_results</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">query</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">evaluation_queries</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="mi">90</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_agent</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">evaluation_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">print_run</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># Space out independent evaluation queries to reduce burst rate-limit pressure.</span>
+    <span class="c1"># Skip the sleep after the final query.</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">evaluation_queries</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>==========================================================================================
 QUERY:
 Use the course reference tool to give me the checklist for schema design.
 
 TOOL CALL LOG:
   1. tool=lookup_course_reference
-     arguments={&quot;topic&quot;: &quot;schema_design&quot;, &quot;detail&quot;: &quot;checklist&quot;}
+     arguments={"topic": "schema_design", "detail": "checklist"}
      succeeded=True
-     result={&quot;status&quot;: &quot;ok&quot;, &quot;topic&quot;: &quot;schema_design&quot;, &quot;detail&quot;: &quot;checklist&quot;, &quot;content&quot;: [&quot;Use explicit JSON types.&quot;, &quot;Mark required fields.&quot;, &quot;Use enums for closed choices.&quot;, &quot;Reject unexpected properties.&quot;, &quot;Keep structures as simple as the task allows.&quot;]}
+     result={"status": "ok", "topic": "schema_design", "detail": "checklist", "content": ["Use explicit JSON types.", "Mark required fields.", "Use enums for closed choices.", "Reject unexpected properties.", "Keep structures as simple as the task allows."]}
 
 FINAL ANSWER:
 Here is the checklist for schema design:
@@ -591,9 +1448,9 @@ Convert 5280 feet to miles using the conversion tool.
 
 TOOL CALL LOG:
   1. tool=convert_length
-     arguments={&quot;to_unit&quot;: &quot;miles&quot;, &quot;value&quot;: 5280, &quot;from_unit&quot;: &quot;feet&quot;}
+     arguments={"to_unit": "miles", "value": 5280, "from_unit": "feet"}
      succeeded=True
-     result={&quot;status&quot;: &quot;ok&quot;, &quot;input&quot;: {&quot;value&quot;: 5280, &quot;unit&quot;: &quot;feet&quot;}, &quot;output&quot;: {&quot;value&quot;: 1.0, &quot;unit&quot;: &quot;miles&quot;}}
+     result={"status": "ok", "input": {"value": 5280, "unit": "feet"}, "output": {"value": 1.0, "unit": "miles"}}
 
 FINAL ANSWER:
 5280 feet is equal to 1.0 mile.
@@ -604,9 +1461,9 @@ Use the guarded Python tool to calculate (17 * 23) + 11.
 
 TOOL CALL LOG:
   1. tool=run_guarded_python
-     arguments={&quot;task&quot;: &quot;arithmetic&quot;, &quot;code&quot;: &quot;(17 * 23) + 11&quot;}
+     arguments={"task": "arithmetic", "code": "(17 * 23) + 11"}
      succeeded=True
-     result={&quot;status&quot;: &quot;ok&quot;, &quot;result&quot;: 402}
+     result={"status": "ok", "result": 402}
 
 FINAL ANSWER:
 The result of (17 * 23) + 11 is 402.
@@ -617,85 +1474,218 @@ First use the guarded Python tool to calculate 144 * 3. Then convert that result
 
 TOOL CALL LOG:
   1. tool=run_guarded_python
-     arguments={&quot;code&quot;: &quot;144 * 3&quot;, &quot;task&quot;: &quot;arithmetic&quot;}
+     arguments={"code": "144 * 3", "task": "arithmetic"}
      succeeded=True
-     result={&quot;status&quot;: &quot;ok&quot;, &quot;result&quot;: 432}
+     result={"status": "ok", "result": 432}
   2. tool=convert_length
-     arguments={&quot;value&quot;: 432, &quot;from_unit&quot;: &quot;centimeters&quot;, &quot;to_unit&quot;: &quot;meters&quot;}
+     arguments={"value": 432, "from_unit": "centimeters", "to_unit": "meters"}
      succeeded=True
-     result={&quot;status&quot;: &quot;ok&quot;, &quot;input&quot;: {&quot;value&quot;: 432, &quot;unit&quot;: &quot;centimeters&quot;}, &quot;output&quot;: {&quot;value&quot;: 4.32, &quot;unit&quot;: &quot;meters&quot;}}
+     result={"status": "ok", "input": {"value": 432, "unit": "centimeters"}, "output": {"value": 4.32, "unit": "meters"}}
 
 FINAL ANSWER:
 First, calculating $144 \times 3$ using the guarded Python tool yielded **432**.
 
 Next, converting 432 centimeters to meters using the conversion tool resulted in **4.32 meters**.
 
-</pre></section><section class="cell markdown"><h3>Evaluation checklist</h3><div class='spacer'></div><p>After running the previous cell, verify from the printed log that:</p><div class='spacer'></div><ul><li>Query 1 called <code>lookup_course_reference</code>.</li><li>Query 2 called <code>convert_length</code>.</li><li>Query 3 called <code>run_guarded_python</code>.</li><li>Query 4 called both <code>run_guarded_python</code> and <code>convert_length</code> in sequence.</li><li>Every logged call shows the arguments and a <code>succeeded</code> value.</li></ul><div class='spacer'></div><p>If the model chooses a different but valid path on a live run, report what actually happened rather than editing the output to match expectations.</p></section><section class="cell codecell"><div class="prompt">In [8]:</div><pre class="code"><code>summary_rows = []
-for result in evaluation_results:
-    summary_rows.append({
-        &quot;query&quot;: result[&quot;query&quot;],
-        &quot;tools&quot;: [entry[&quot;tool&quot;] for entry in result[&quot;tool_log&quot;]],
-        &quot;all_calls_succeeded&quot;: all(entry[&quot;succeeded&quot;] for entry in result[&quot;tool_log&quot;]),
-        &quot;rounds&quot;: result[&quot;rounds&quot;],
-    })
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=wldYA6XaIoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Evaluation-checklist">Evaluation checklist<a class="anchor-link" href="#Evaluation-checklist">¶</a></h3><p>After running the previous cell, verify from the printed log that:</p>
+<ul>
+<li>Query 1 called <code>lookup_course_reference</code>.</li>
+<li>Query 2 called <code>convert_length</code>.</li>
+<li>Query 3 called <code>run_guarded_python</code>.</li>
+<li>Query 4 called both <code>run_guarded_python</code> and <code>convert_length</code> in sequence.</li>
+<li>Every logged call shows the arguments and a <code>succeeded</code> value.</li>
+</ul>
+<p>If the model chooses a different but valid path on a live run, report what actually happened rather than editing the output to match expectations.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ABy_2sSkIoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="n">summary_rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">evaluation_results</span><span class="p">:</span>
+    <span class="n">summary_rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+        <span class="s2">"query"</span><span class="p">:</span> <span class="n">result</span><span class="p">[</span><span class="s2">"query"</span><span class="p">],</span>
+        <span class="s2">"tools"</span><span class="p">:</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="s2">"tool"</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">"tool_log"</span><span class="p">]],</span>
+        <span class="s2">"all_calls_succeeded"</span><span class="p">:</span> <span class="nb">all</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">"succeeded"</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">"tool_log"</span><span class="p">]),</span>
+        <span class="s2">"rounds"</span><span class="p">:</span> <span class="n">result</span><span class="p">[</span><span class="s2">"rounds"</span><span class="p">],</span>
+    <span class="p">})</span>
 
-for row in summary_rows:
-    print(json.dumps(row, indent=2))</code></pre><pre class="output">{
-  &quot;query&quot;: &quot;Use the course reference tool to give me the checklist for schema design.&quot;,
-  &quot;tools&quot;: [
-    &quot;lookup_course_reference&quot;
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">summary_rows</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>{
+  "query": "Use the course reference tool to give me the checklist for schema design.",
+  "tools": [
+    "lookup_course_reference"
   ],
-  &quot;all_calls_succeeded&quot;: true,
-  &quot;rounds&quot;: 2
+  "all_calls_succeeded": true,
+  "rounds": 2
 }
 {
-  &quot;query&quot;: &quot;Convert 5280 feet to miles using the conversion tool.&quot;,
-  &quot;tools&quot;: [
-    &quot;convert_length&quot;
+  "query": "Convert 5280 feet to miles using the conversion tool.",
+  "tools": [
+    "convert_length"
   ],
-  &quot;all_calls_succeeded&quot;: true,
-  &quot;rounds&quot;: 2
+  "all_calls_succeeded": true,
+  "rounds": 2
 }
 {
-  &quot;query&quot;: &quot;Use the guarded Python tool to calculate (17 * 23) + 11.&quot;,
-  &quot;tools&quot;: [
-    &quot;run_guarded_python&quot;
+  "query": "Use the guarded Python tool to calculate (17 * 23) + 11.",
+  "tools": [
+    "run_guarded_python"
   ],
-  &quot;all_calls_succeeded&quot;: true,
-  &quot;rounds&quot;: 2
+  "all_calls_succeeded": true,
+  "rounds": 2
 }
 {
-  &quot;query&quot;: &quot;First use the guarded Python tool to calculate 144 * 3. Then convert that result from centimeters to meters using the conversion tool. Use both tools rather than doing either step mentally.&quot;,
-  &quot;tools&quot;: [
-    &quot;run_guarded_python&quot;,
-    &quot;convert_length&quot;
+  "query": "First use the guarded Python tool to calculate 144 * 3. Then convert that result from centimeters to meters using the conversion tool. Use both tools rather than doing either step mentally.",
+  "tools": [
+    "run_guarded_python",
+    "convert_length"
   ],
-  &quot;all_calls_succeeded&quot;: true,
-  &quot;rounds&quot;: 3
+  "all_calls_succeeded": true,
+  "rounds": 3
 }
-</pre></section><section class="cell markdown"><h2>6. Part 4 — Real failure and recovery</h2><div class='spacer'></div><p>The failure case is a <strong>runtime error in a tool</strong>, which is explicitly allowed by the assignment.</p><div class='spacer'></div><p>The schema-valid call below requests <code>10 / 0</code>. Division is an allowed arithmetic operation, so the AST guardrail correctly permits the expression to reach execution. Python then raises <code>ZeroDivisionError</code>.</p><div class='spacer'></div><p>The tool catches that exception and converts it into a structured error. The agent loop sends that error back to the model instead of crashing. The user prompt explicitly permits a corrected retry using <code>10 / 2</code>, allowing the model to demonstrate recovery.</p><div class='spacer'></div><p>This is documented in GitHub issue <strong>#15</strong>.</p></section><section class="cell codecell"><div class="prompt">In [9]:</div><pre class="code"><code>failure_query = (
-    &quot;Use the guarded Python tool to calculate 10 / 0. &quot;
-    &quot;That first call is intentionally expected to fail. &quot;
-    &quot;After you receive the structured runtime error, recover by retrying with 10 / 2, &quot;
-    &quot;then explain briefly what failed and report the successful corrected result.&quot;
-)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cnhSxokOIoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="6.-Part-4-%E2%80%94-Real-failure-and-recovery">6. Part 4 — Real failure and recovery<a class="anchor-link" href="#6.-Part-4-%E2%80%94-Real-failure-and-recovery">¶</a></h2><p>The failure case is a <strong>runtime error in a tool</strong>, which is explicitly allowed by the assignment.</p>
+<p>The schema-valid call below requests <code>10 / 0</code>. Division is an allowed arithmetic operation, so the AST guardrail correctly permits the expression to reach execution. Python then raises <code>ZeroDivisionError</code>.</p>
+<p>The tool catches that exception and converts it into a structured error. The agent loop sends that error back to the model instead of crashing. The user prompt explicitly permits a corrected retry using <code>10 / 2</code>, allowing the model to demonstrate recovery.</p>
+<p>This is documented in GitHub issue <strong>#15</strong>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ZVFTH3DPIoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-python"><pre><span></span><span class="n">failure_query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"Use the guarded Python tool to calculate 10 / 0. "</span>
+    <span class="s2">"That first call is intentionally expected to fail. "</span>
+    <span class="s2">"After you receive the structured runtime error, recover by retrying with 10 / 2, "</span>
+    <span class="s2">"then explain briefly what failed and report the successful corrected result."</span>
+<span class="p">)</span>
 
-failure_result = run_agent(failure_query, use_cache=False)
-print_run(failure_result)</code></pre><pre class="output">QUERY:
+<span class="n">failure_result</span> <span class="o">=</span> <span class="n">run_agent</span><span class="p">(</span><span class="n">failure_query</span><span class="p">,</span> <span class="n">use_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">print_run</span><span class="p">(</span><span class="n">failure_result</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>QUERY:
 Use the guarded Python tool to calculate 10 / 0. That first call is intentionally expected to fail. After you receive the structured runtime error, recover by retrying with 10 / 2, then explain briefly what failed and report the successful corrected result.
 
 TOOL CALL LOG:
   1. tool=run_guarded_python
-     arguments={&quot;task&quot;: &quot;arithmetic&quot;, &quot;code&quot;: &quot;10 / 0&quot;}
+     arguments={"task": "arithmetic", "code": "10 / 0"}
      succeeded=False
-     result={&quot;status&quot;: &quot;error&quot;, &quot;error_type&quot;: &quot;ZeroDivisionError&quot;, &quot;message&quot;: &quot;division by zero&quot;}
+     result={"status": "error", "error_type": "ZeroDivisionError", "message": "division by zero"}
   2. tool=run_guarded_python
-     arguments={&quot;code&quot;: &quot;10 / 2&quot;, &quot;task&quot;: &quot;arithmetic&quot;}
+     arguments={"code": "10 / 2", "task": "arithmetic"}
      succeeded=True
-     result={&quot;status&quot;: &quot;ok&quot;, &quot;result&quot;: 5.0}
+     result={"status": "ok", "result": 5.0}
 
 FINAL ANSWER:
 The initial calculation of `10 / 0` failed with a `ZeroDivisionError` because division by zero is mathematically undefined and not permitted by the runtime. 
 
 After receiving that structured error, I recovered by retrying the expression with `10 / 2`, which successfully completed and returned the corrected result of `5.0`.
-</pre></section><section class="cell markdown"><h3>Failure analysis</h3><div class='spacer'></div><p><strong>Schema used:</strong> <code>run_guarded_python</code> requires a string <code>task</code> whose enum is <code>arithmetic</code> and a string <code>code</code>. Extra properties are forbidden.</p><div class='spacer'></div><p><strong>Bad call:</strong> <code>{&quot;task&quot;: &quot;arithmetic&quot;, &quot;code&quot;: &quot;10 / 0&quot;}</code></p><div class='spacer'></div><p><strong>Why it failed:</strong> The arguments satisfy the JSON schema and the code satisfies the AST allowlist, but division by zero is invalid at runtime. The guarded worker returns a structured <code>ZeroDivisionError</code>.</p><div class='spacer'></div><p><strong>Recovery:</strong> The model receives that error through the normal tool-result message and retries with <code>{&quot;task&quot;: &quot;arithmetic&quot;, &quot;code&quot;: &quot;10 / 2&quot;}</code>.</p><div class='spacer'></div><p><strong>Fix category:</strong> Retry after a structured runtime error. No schema correction is needed because the original arguments are schema-valid.</p><div class='spacer'></div><p>The live log above is the evidence. It should show both the failed and successful calls. If it does not, rerun only this failure experiment and document the actual behavior rather than claiming a recovery that did not occur.</p></section><section class="cell markdown"><h2>7. Conclusions</h2><div class='spacer'></div><p>This experiment demonstrates the point at which ordinary model completion becomes a simple agent loop: the model can choose a constrained action, observe the result, and make another decision.</p><div class='spacer'></div><p>The schemas limit the model's action space, while the guarded code runner adds a separate safety boundary before model-suggested code is executed. The runtime-error experiment also shows why structured tool errors matter: a tool can fail without crashing the whole interaction, and the model can use the returned error as new context for recovery.</p><div class='spacer'></div><h3>Safety limitation</h3><div class='spacer'></div><p>The arithmetic runner is only a focused instructional control. It is not a complete sandbox and should not be used as a production code-execution service.</p></section><section class="cell markdown"><h2>8. AI assistance disclosure</h2><div class='spacer'></div><p>ChatGPT was used to scaffold the notebook structure, tool schemas, agent loop, guardrail design, evaluation plan, README documentation, and the GitHub failure/recovery issue. The live Gemini calls were executed in this notebook, and the saved tool selections, arguments, outputs, failure behavior, and recovery behavior shown above are the results of those runs. Final interpretation of the measured results remains the student's responsibility.</p></section></body></html>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=WTsRMcl7IoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="Failure-analysis">Failure analysis<a class="anchor-link" href="#Failure-analysis">¶</a></h3><p><strong>Schema used:</strong> <code>run_guarded_python</code> requires a string <code>task</code> whose enum is <code>arithmetic</code> and a string <code>code</code>. Extra properties are forbidden.</p>
+<p><strong>Bad call:</strong> <code>{"task": "arithmetic", "code": "10 / 0"}</code></p>
+<p><strong>Why it failed:</strong> The arguments satisfy the JSON schema and the code satisfies the AST allowlist, but division by zero is invalid at runtime. The guarded worker returns a structured <code>ZeroDivisionError</code>.</p>
+<p><strong>Recovery:</strong> The model receives that error through the normal tool-result message and retries with <code>{"task": "arithmetic", "code": "10 / 2"}</code>.</p>
+<p><strong>Fix category:</strong> Retry after a structured runtime error. No schema correction is needed because the original arguments are schema-valid.</p>
+<p>The live log above is the evidence. It should show both the failed and successful calls. If it does not, rerun only this failure experiment and document the actual behavior rather than claiming a recovery that did not occur.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d-qXMmDJIoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="7.-Conclusions">7. Conclusions<a class="anchor-link" href="#7.-Conclusions">¶</a></h2><p>This experiment demonstrates the point at which ordinary model completion becomes a simple agent loop: the model can choose a constrained action, observe the result, and make another decision.</p>
+<p>The schemas limit the model's action space, while the guarded code runner adds a separate safety boundary before model-suggested code is executed. The runtime-error experiment also shows why structured tool errors matter: a tool can fail without crashing the whole interaction, and the model can use the returned error as new context for recovery.</p>
+<h3 id="Safety-limitation">Safety limitation<a class="anchor-link" href="#Safety-limitation">¶</a></h3><p>The arithmetic runner is only a focused instructional control. It is not a complete sandbox and should not be used as a production code-execution service.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=OK9nspFoIoQY">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="8.-AI-assistance-disclosure">8. AI assistance disclosure<a class="anchor-link" href="#8.-AI-assistance-disclosure">¶</a></h2><p>ChatGPT was used to scaffold the notebook structure, tool schemas, agent loop, guardrail design, evaluation plan, README documentation, and the GitHub failure/recovery issue. The live Gemini calls were executed in this notebook, and the saved tool selections, arguments, outputs, failure behavior, and recovery behavior shown above are the results of those runs. Final interpretation of the measured results remains the student's responsibility.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body>
+</html>
