@@ -60,3 +60,12 @@ The goal is to understand how LLM-system components work, not only how to connec
 - ChatGPT was used to help debug the Colab/Gemini API workflow, rate-limit handling, repository prompt-file loading, and the final comparison-table presentation.
 - ChatGPT was used to review the measured results and help organize the README and research note around the observed exact-match and semantic-similarity results.
 - The live Gemini experiment was executed by me using the saved notebook. The reported exact-match and semantic-similarity measurements are the results of that run; no regression or improvement was fabricated beyond the measured outputs.
+
+
+### Week 4
+
+- ChatGPT was used to scaffold the Week 4 notebook structure, constrained tool schemas, the end-to-end function-calling loop, guarded arithmetic code-runner design, evaluation queries, and supporting README documentation.
+- ChatGPT was also used to create the GitHub issue documenting the planned runtime failure and recovery case.
+- The code runner was designed with an AST allowlist that permits numeric arithmetic only and blocks filesystem, network, imports, function calls, attribute/name access, subscripting, control flow, and model-supplied process execution before execution.
+- The live Gemini calls, selected tools, generated arguments, tool outputs, failure behavior, recovery behavior, and final measured observations must come from running the notebook. These results are not fabricated by ChatGPT.
+- Final interpretation of the executed results and any changes made after observing the live run are the student's own analysis and decisions.
