@@ -4,6 +4,7 @@
 
 .ipynb_checkpoints/
 **/.ipynb_checkpoints/
+.week5_gemini_cache.json
 
 .tiktoken_cache/
 **/.tiktoken_cache/
