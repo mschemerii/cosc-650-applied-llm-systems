@@ -69,3 +69,10 @@ The goal is to understand how LLM-system components work, not only how to connec
 - The code runner was designed with an AST allowlist that permits numeric arithmetic only and blocks filesystem, network, imports, function calls, attribute/name access, subscripting, control flow, and model-supplied process execution before execution.
 - The live Gemini calls, selected tools, generated arguments, tool outputs, failure behavior, recovery behavior, and final measured observations must come from running the notebook. These results are not fabricated by ChatGPT.
 - Final interpretation of the executed results and any changes made after observing the live run are the student's own analysis and decisions.
+
+### Week 5 RAG assignment
+
+- ChatGPT scaffolded `week-05/week5_rag_retrieval_evaluation.ipynb`, including the fictional eight-page documentation corpus, ten proposed query labels, two-model FAISS comparison, precision/recall calculations, failure inspection, and Gemini prompting and cache code.
+- ChatGPT helped repair the Gemini free-tier rate-limit handling and drafted the notebook's retrieval comparison, failure analysis, and answer-quality discussion from the student's saved execution outputs. ChatGPT also exported the executed notebook to HTML and updated the Week 5 and course READMEs.
+- The student ran local embedding and retrieval and Gemini with their own API key. The saved notebook reports MiniLM and MPNet mean recall@3 of 1.00 and mean precision@3 of 0.333; MPNet ranked the gold chunk first on 10/10 questions and MiniLM on 8/10. These values and the Q05 failure case came from the student's execution, not generated measurements.
+- The student remains responsible for checking the proposed relevance labels, interpretations, grounded answers, and final submission. The saved Colab answer table truncates long text; conclusions about all ten answer texts require reviewing their full responses.
