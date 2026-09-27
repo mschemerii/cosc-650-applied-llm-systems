@@ -69,3 +69,8 @@ The goal is to understand how LLM-system components work, not only how to connec
 - The code runner was designed with an AST allowlist that permits numeric arithmetic only and blocks filesystem, network, imports, function calls, attribute/name access, subscripting, control flow, and model-supplied process execution before execution.
 - The live Gemini calls, selected tools, generated arguments, tool outputs, failure behavior, recovery behavior, and final measured observations must come from running the notebook. These results are not fabricated by ChatGPT.
 - Final interpretation of the executed results and any changes made after observing the live run are the student's own analysis and decisions.
+
+### Week 5 RAG assignment
+
+- ChatGPT scaffolded `week-05/week5_rag_retrieval_evaluation.ipynb`, including the fictional eight-page documentation corpus, ten proposed query labels, two-model FAISS comparison, precision/recall calculations, failure inspection, and Gemini prompting and cache code.
+- The student must verify relevance labels against the displayed source text, execute local embedding and retrieval, run Gemini with their own API key, inspect grounded answers, and write the final analysis from observed results. No retrieval measurements or Gemini outputs were supplied by ChatGPT.
