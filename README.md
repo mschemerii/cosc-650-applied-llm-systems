@@ -16,7 +16,7 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | [Week 2](week-02/) | Inference and sampling | Examined how temperature, top-p, and top-k affect next-token selection and generated output. The Week 2 assignment and discussion are separate deliverables. |
 | [Week 3](week-03/) | Prompts as engineering artifacts | Versioned and evaluated support-ticket classification prompts over a 10-case test set using exact-match accuracy and semantic similarity. |
 | [Week 4](week-04/) | Tool calling and structured function calling | Built a complete Gemini tool-calling loop with three constrained JSON-schema tools, guarded arithmetic code execution, multi-tool sequencing, structured failure handling, and successful recovery. A separate discussion experiment compares loose and tight tool schemas. |
-| [Week 5](week-05/) | Retrieval and chunking | Compares fixed-size, overlapping, and semantic chunking strategies using a real technical document and consistent retrieval queries. |
+| [Week 5](week-05/) | RAG and retrieval evaluation | Built an eight-document RAG pipeline with local MiniLM/MPNet embeddings, FAISS retrieval, ten labeled queries, chunk-level precision/recall, and grounded Gemini generation. A separate discussion compares three chunking strategies. |
 | Weeks 6–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
 
 ## Repository Organization
@@ -41,6 +41,7 @@ Technologies used throughout the course may include:
 - LLM tool and function calling
 - Structured outputs
 - Retrieval-augmented generation
+- sentence-transformers and FAISS for local retrieval
 - Local large language models
 - Model and application evaluation
 
