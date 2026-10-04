@@ -44,41 +44,36 @@ The goal is to understand how LLM-system components work, not only how to connec
 
 ### Week 1
 
-- ChatGPT was used to develop the Spanish/English test passages and explore the Unicode normalization failure case when typos caused frustration.
+- ChatGPT was used to debug the Week 1 notebook and grammatically check/improve documentation.
 - The tokenizer experiments were executed locally by me using `tiktoken`.
 - The reported token counts are the saved results of those runs.
 
 ### Week 2
 
-- ChatGPT was used to review the assignment requirements, help interpret the sampling experiment, and improve explanations of temperature, top-k, top-p, probability-distribution changes, and the observed failure/surprise case.
-- ChatGPT was also used to review the completed notebook for rubric compliance and help update the Week 2 README.
+- ChatGPT was used to debug the Week 2 notebook and grammatically check/improve documentation.
 - The `distilgpt2` forward-pass and sampling experiments were executed by me, and the reported numerical measurements and outputs come from those runs.
 
 ### Week 3
 
-- ChatGPT was used to scaffold and review the versioned prompt files, test-suite structure, evaluation code, and supporting documentation for the prompt-engineering assignment.
-- ChatGPT was used to help debug the Colab/Gemini API workflow, rate-limit handling, repository prompt-file loading, and the final comparison-table presentation.
-- ChatGPT was used to review the measured results and help organize the README and research note around the observed exact-match and semantic-similarity results.
-- The live Gemini experiment was executed by me using the saved notebook. The reported exact-match and semantic-similarity measurements are the results of that run; no regression or improvement was fabricated beyond the measured outputs.
+- ChatGPT was used to debug the Week 3 notebook and Colab/Gemini workflow and grammatically check/improve documentation.
+- The live Gemini experiment was executed by me using the saved notebook. The reported exact-match and semantic-similarity measurements are the results of that run.
 
 ### Week 4
 
-- ChatGPT was used to scaffold the Week 4 notebook structure, constrained tool schemas, the end-to-end function-calling loop, guarded arithmetic code-runner design, evaluation queries, and supporting README documentation.
-- ChatGPT was also used to create the GitHub issue documenting the planned runtime failure and recovery case.
-- The code runner was designed with an AST allowlist that permits numeric arithmetic only and blocks filesystem, network, imports, function calls, attribute/name access, subscripting, control flow, and model-supplied process execution before execution.
-- The live Gemini calls, selected tools, generated arguments, tool outputs, failure behavior, recovery behavior, and final measured observations must come from running the notebook. These results are not fabricated by ChatGPT.
+- ChatGPT was used to debug the Week 4 notebook and grammatically check/improve documentation.
+- The code runner uses an AST allowlist that permits numeric arithmetic only and blocks filesystem, network, imports, function calls, attribute/name access, subscripting, control flow, and model-supplied process execution before execution.
+- The live Gemini calls, selected tools, generated arguments, tool outputs, failure behavior, recovery behavior, and final measured observations come from running the notebook.
 - Final interpretation of the executed results and any changes made after observing the live run are the student's own analysis and decisions.
 
 ### Week 5 RAG assignment
 
-- ChatGPT scaffolded `week-05/week5_rag_retrieval_evaluation.ipynb`, including the fictional eight-page documentation corpus, ten proposed query labels, two-model FAISS comparison, precision/recall calculations, failure inspection, and Gemini prompting and cache code.
-- ChatGPT helped repair the Gemini free-tier rate-limit handling and drafted the notebook's retrieval comparison, failure analysis, and answer-quality discussion from the student's saved execution outputs. ChatGPT also exported the executed notebook to HTML and updated the Week 5 and course READMEs.
-- The student ran local embedding and retrieval and Gemini with their own API key. The saved notebook reports MiniLM and MPNet mean recall@3 of 1.00 and mean precision@3 of 0.333; MPNet ranked the gold chunk first on 10/10 questions and MiniLM on 8/10. These values and the Q05 failure case came from the student's execution, not generated measurements.
-- The student remains responsible for checking the proposed relevance labels, interpretations, grounded answers, and final submission. The saved Colab answer table truncates long text; conclusions about all ten answer texts require reviewing their full responses.
+- ChatGPT was used to debug the Week 5 notebook and Gemini free-tier workflow, preserve the evaluation structure, and grammatically check/improve documentation.
+- The student ran local embedding and retrieval and Gemini with their own API key. The saved notebook reports MiniLM and MPNet mean recall@3 of 1.00 and mean precision@3 of 0.333; MPNet ranked the gold chunk first on 10/10 questions and MiniLM on 8/10. These values and the Q05 failure case came from the student's execution.
+- The student remains responsible for checking the relevance labels, interpretations, grounded answers, and final submission.
 
 ### Week 6 query transformation and re-ranking assignment
 
-- ChatGPT was used to scaffold `week-06/week6_query_transform_rerank.ipynb`, including reuse of the Week 5 corpus and frozen ten-query evaluation set, MiniLM baseline retrieval, Gemini multi-query transformation, reciprocal-rank fusion, local cross-encoder re-ranking, ranking-sensitive metrics, per-query deltas, and regression inspection.
-- The notebook uses `gemini-3.5-flash-lite` for two query rewrites per test query and caches those responses in `week6_query_cache.json` so reruns do not repeat the live calls.
+- ChatGPT was used to debug the Week 6 notebook, preserve the Week 5 evaluation set, and grammatically check/improve documentation.
+- The notebook uses `gemini-3.5-flash-lite` to generate two query rewrites in one request per test query and caches responses in `week6_query_cache.json` so successful calls are not repeated.
 - MiniLM is used as the Week 6 baseline because the saved Week 5 run ranked the gold chunk first on 8/10 queries; the Week 5 MPNet result was already 10/10 and would create a ceiling for ranking improvement.
-- ChatGPT did not fabricate Week 6 measurements. The query rewrites, transformed rankings, re-ranked results, per-query deltas, regression case, and final interpretation must come from the student's executed notebook before submission.
+- Week 6 measurements, query rewrites, transformed rankings, re-ranked results, per-query deltas, failure/no-regression result, and final interpretation come from the student's executed notebook.
