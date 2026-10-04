@@ -17,14 +17,15 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | [Week 3](week-03/) | Prompts as engineering artifacts | Versioned and evaluated support-ticket classification prompts over a 10-case test set using exact-match accuracy and semantic similarity. |
 | [Week 4](week-04/) | Tool calling and structured function calling | Built a complete Gemini tool-calling loop with three constrained JSON-schema tools, guarded arithmetic code execution, multi-tool sequencing, structured failure handling, and successful recovery. A separate discussion experiment compares loose and tight tool schemas. |
 | [Week 5](week-05/) | RAG and retrieval evaluation | Built an eight-document RAG pipeline with local MiniLM/MPNet embeddings, FAISS retrieval, ten labeled queries, chunk-level precision/recall, and grounded Gemini generation. A separate discussion compares three chunking strategies. |
-| Weeks 6–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
+| [Week 6](week-06/) | Query transformation and re-ranking | Extended the Week 5 retriever with Gemini Flash-Lite multi-query transformation, reciprocal-rank fusion, transformation-only evaluation, and a local cross-encoder reranker. The executed run showed transformation-only MRR 0.850 versus baseline 0.900, while reranking improved final MRR to 1.000. |
+| Weeks 7–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
 
 ## Repository Organization
 
 - `week-01/` through `week-08/` — weekly assignments, experiments, discussions, and notebooks
 - `notes/` — research notes and reading annotations
 - `project/` — final project code and documentation
-- `CLAUDE.md` and `GEMINI.md` — project context and conventions for AI coding assistants
+- `GEMINI.md` — project context and conventions for AI coding assistants
 
 ## Technologies
 
@@ -33,10 +34,8 @@ Technologies used throughout the course may include:
 - Python 3.11+
 - Jupyter notebooks and Google Colab
 - Hugging Face Transformers
-- Google Gemini through the OpenAI-compatible endpoint
+- Google Gemini
 - tiktoken
-- OpenAI SDK
-- Anthropic SDK
 - JSON Schema
 - LLM tool and function calling
 - Structured outputs
@@ -47,7 +46,7 @@ Technologies used throughout the course may include:
 
 ## Workflow
 
-Weekly work is developed on a dedicated branch and submitted through a pull request with a written results summary. Notebooks retain their measured outputs, and supporting research or failure analysis is documented through linked GitHub issues when required.
+Weekly work is developed on a dedicated branch and submitted through a pull request with a written results summary. Notebooks retain their measured outputs, and supporting research or failure analysis is documented when required.
 
 ## Purpose
 
