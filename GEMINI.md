@@ -61,7 +61,6 @@ The goal is to understand how LLM-system components work, not only how to connec
 - ChatGPT was used to review the measured results and help organize the README and research note around the observed exact-match and semantic-similarity results.
 - The live Gemini experiment was executed by me using the saved notebook. The reported exact-match and semantic-similarity measurements are the results of that run; no regression or improvement was fabricated beyond the measured outputs.
 
-
 ### Week 4
 
 - ChatGPT was used to scaffold the Week 4 notebook structure, constrained tool schemas, the end-to-end function-calling loop, guarded arithmetic code-runner design, evaluation queries, and supporting README documentation.
@@ -76,3 +75,10 @@ The goal is to understand how LLM-system components work, not only how to connec
 - ChatGPT helped repair the Gemini free-tier rate-limit handling and drafted the notebook's retrieval comparison, failure analysis, and answer-quality discussion from the student's saved execution outputs. ChatGPT also exported the executed notebook to HTML and updated the Week 5 and course READMEs.
 - The student ran local embedding and retrieval and Gemini with their own API key. The saved notebook reports MiniLM and MPNet mean recall@3 of 1.00 and mean precision@3 of 0.333; MPNet ranked the gold chunk first on 10/10 questions and MiniLM on 8/10. These values and the Q05 failure case came from the student's execution, not generated measurements.
 - The student remains responsible for checking the proposed relevance labels, interpretations, grounded answers, and final submission. The saved Colab answer table truncates long text; conclusions about all ten answer texts require reviewing their full responses.
+
+### Week 6 query transformation and re-ranking assignment
+
+- ChatGPT was used to scaffold `week-06/week6_query_transform_rerank.ipynb`, including reuse of the Week 5 corpus and frozen ten-query evaluation set, MiniLM baseline retrieval, Gemini multi-query transformation, reciprocal-rank fusion, local cross-encoder re-ranking, ranking-sensitive metrics, per-query deltas, and regression inspection.
+- The notebook uses `gemini-3.5-flash-lite` for two query rewrites per test query and caches those responses in `week6_query_cache.json` so reruns do not repeat the live calls.
+- MiniLM is used as the Week 6 baseline because the saved Week 5 run ranked the gold chunk first on 8/10 queries; the Week 5 MPNet result was already 10/10 and would create a ceiling for ranking improvement.
+- ChatGPT did not fabricate Week 6 measurements. The query rewrites, transformed rankings, re-ranked results, per-query deltas, regression case, and final interpretation must come from the student's executed notebook before submission.
