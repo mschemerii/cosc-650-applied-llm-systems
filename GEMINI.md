@@ -74,6 +74,7 @@ The goal is to understand how LLM-system components work, not only how to connec
 ### Week 6 query transformation and re-ranking assignment
 
 - ChatGPT was used to debug the Week 6 notebook, preserve the Week 5 evaluation set, and grammatically check/improve documentation.
-- The notebook uses `gemini-3.5-flash-lite` to generate two query rewrites in one request per test query and caches responses in `week6_query_cache.json` so successful calls are not repeated.
+- The notebook uses `gemini-3.5-flash-lite` to generate two unique query rewrites in one request per test query and caches responses in `week6_query_cache.json` so successful calls are not repeated.
+- Cache entries are de-duplicated and considered complete only when two unique, non-empty rewrites are present for the query.
 - MiniLM is used as the Week 6 baseline because the saved Week 5 run ranked the gold chunk first on 8/10 queries; the Week 5 MPNet result was already 10/10 and would create a ceiling for ranking improvement.
 - Week 6 measurements, query rewrites, transformed rankings, re-ranked results, per-query deltas, failure/no-regression result, and final interpretation come from the student's executed notebook.
