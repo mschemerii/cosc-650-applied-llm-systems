@@ -17,7 +17,8 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | [Week 3](week-03/) | Prompts as engineering artifacts | Versioned and evaluated support-ticket classification prompts over a 10-case test set using exact-match accuracy and semantic similarity. |
 | [Week 4](week-04/) | Tool calling and structured function calling | Built a complete Gemini tool-calling loop with three constrained JSON-schema tools, guarded arithmetic code execution, multi-tool sequencing, structured failure handling, and successful recovery. A separate discussion experiment compares loose and tight tool schemas. |
 | [Week 5](week-05/) | RAG and retrieval evaluation | Built an eight-document RAG pipeline with local MiniLM/MPNet embeddings, FAISS retrieval, ten labeled queries, chunk-level precision/recall, and grounded Gemini generation. A separate discussion compares three chunking strategies. |
-| Weeks 6–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
+| [Week 6](week-06/) | Query transformation and re-ranking | Extends the Week 5 retriever with Gemini Flash-Lite multi-query transformation, reciprocal-rank fusion, a local cross-encoder re-ranker, per-query deltas, and regression analysis. |
+| Weeks 7–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
 
 ## Repository Organization
 
