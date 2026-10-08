@@ -39,4 +39,4 @@ The notebook source remains committed in GitHub, and the executed HTML should al
 
 ## AI use
 
-ChatGPT was used to debug the Week 6 notebook, preserve the Week 5 evaluation set, and grammatically check/improve documentation. Gemini Flash-Lite is used for the measured query transformations. The analysis, measurements, and final decisions are based on the executed notebook results.
+AI assistance was used to debug the Week 6 notebook, preserve the Week 5 evaluation set, and grammatically check/improve documentation. Gemini Flash-Lite is used for the measured query transformations. The analysis, measurements, and final decisions are based on the executed notebook results.
