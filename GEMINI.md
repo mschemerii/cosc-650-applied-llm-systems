@@ -11,3 +11,7 @@ The Week 6 notebook is self-contained. Gemini query rewrites are cached in an in
 ChatGPT was used to debug the Week 6 notebook, preserve the Week 5 evaluation set, and grammatically check/improve documentation.
 
 Gemini Flash-Lite is used for the measured query transformations. The analysis, measurements, and final decisions are based on the executed notebook results.
+
+## Week 7 Discussion
+
+ChatGPT drafted the initial adaptation-decision discussion and checked its word count and coverage against the supplied assignment requirements. The meeting-summary workflow is hypothetical; the post proposes evaluation criteria and does not report completed experiments or fine-tuning results.
