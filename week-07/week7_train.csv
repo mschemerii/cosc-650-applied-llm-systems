@@ -1,0 +1,201 @@
+text,label
+remind me to book a flight tomorrow,set_reminder
+set a reminder to email the client tomorrow,set_reminder
+remind me to buy milk on Monday,set_reminder
+remind me to email the client on Monday,set_reminder
+create a reminder for pay rent at 5 pm,set_reminder
+create a reminder for call mom before bed,set_reminder
+set a reminder to walk the dog tonight,set_reminder
+ping me to book a flight Friday morning,set_reminder
+set a reminder to call mom this weekend,set_reminder
+remind me to take medication at noon,set_reminder
+set a reminder to submit the report at noon,set_reminder
+create a reminder for back up the laptop before bed,set_reminder
+remind me to buy milk tonight,set_reminder
+create a reminder for email the client at 5 pm,set_reminder
+remind me to call mom on Monday,set_reminder
+set a reminder to renew the license on Monday,set_reminder
+set a reminder to book a flight tomorrow,set_reminder
+remind me to book a flight at noon,set_reminder
+create a reminder for renew the license tonight,set_reminder
+create a reminder for renew the license Friday morning,set_reminder
+create a reminder for renew the license at noon,set_reminder
+create a reminder for book a flight next week,set_reminder
+set a reminder to back up the laptop tonight,set_reminder
+create a reminder for email the client Friday morning,set_reminder
+create a reminder for back up the laptop this afternoon,set_reminder
+set a reminder to call mom on Monday,set_reminder
+set a reminder to take medication tonight,set_reminder
+remind me to take medication Friday morning,set_reminder
+set a reminder to renew the license Friday morning,set_reminder
+set a reminder to renew the license at 5 pm,set_reminder
+ping me to buy milk at 5 pm,set_reminder
+ping me to back up the laptop at 5 pm,set_reminder
+remind me to back up the laptop tomorrow,set_reminder
+create a reminder for book a flight tonight,set_reminder
+set a reminder to email the client tonight,set_reminder
+ping me to walk the dog before bed,set_reminder
+remind me to take medication before bed,set_reminder
+ping me to call mom Friday morning,set_reminder
+create a reminder for walk the dog Friday morning,set_reminder
+ping me to pay rent on Monday,set_reminder
+weather in Cairo on Monday,get_weather
+will it rain in Madrid on Monday,get_weather
+temperature in Lagos on Monday,get_weather
+temperature in Cairo before bed,get_weather
+temperature in Denver before bed,get_weather
+will it rain in Denver at 5 pm,get_weather
+will it rain in Dublin tomorrow,get_weather
+forecast for Dublin next week,get_weather
+temperature in Paris this weekend,get_weather
+temperature in Tokyo next week,get_weather
+will it rain in Seoul Friday morning,get_weather
+temperature in Denver this weekend,get_weather
+will it rain in Lagos on Monday,get_weather
+will it rain in Dublin Friday morning,get_weather
+forecast for Tokyo at 5 pm,get_weather
+will it rain in Lagos tomorrow,get_weather
+temperature in Seoul tonight,get_weather
+forecast for Seoul Friday morning,get_weather
+weather in Lagos on Monday,get_weather
+weather in Denver next week,get_weather
+will it rain in Oslo on Monday,get_weather
+weather in Madrid at 5 pm,get_weather
+temperature in Lagos before bed,get_weather
+weather in Oslo tonight,get_weather
+will it rain in Denver next week,get_weather
+temperature in Tokyo this afternoon,get_weather
+forecast for Paris before bed,get_weather
+temperature in Madrid this afternoon,get_weather
+will it rain in Dublin before bed,get_weather
+forecast for Paris at noon,get_weather
+weather in Dublin tomorrow,get_weather
+temperature in Dublin this weekend,get_weather
+will it rain in Lagos before bed,get_weather
+temperature in Lima at noon,get_weather
+weather in Lagos this afternoon,get_weather
+temperature in Lagos this afternoon,get_weather
+forecast for Lagos on Monday,get_weather
+temperature in Seoul before bed,get_weather
+temperature in Madrid tonight,get_weather
+weather in Seoul on Monday,get_weather
+queue Fela Kuti,play_music
+put on rock,play_music
+put on jazz,play_music
+play Miles Davis,play_music
+put on piano music,play_music
+put on Fela Kuti,play_music
+put on lofi beats,play_music
+start playing classical music,play_music
+play classical music,play_music
+queue Adele,play_music
+play ambient music,play_music
+start playing jazz,play_music
+queue lofi beats,play_music
+play rock,play_music
+queue piano music,play_music
+start playing rock,play_music
+start playing piano music,play_music
+play reggaeton,play_music
+put on reggaeton,play_music
+put on Miles Davis,play_music
+play lofi beats,play_music
+play Adele,play_music
+play Fela Kuti,play_music
+start playing lofi beats,play_music
+start playing ambient music,play_music
+start playing Miles Davis,play_music
+start playing reggaeton,play_music
+queue reggaeton,play_music
+queue classical music,play_music
+play jazz,play_music
+queue rock,play_music
+start playing Fela Kuti,play_music
+queue Miles Davis,play_music
+put on Adele,play_music
+queue jazz,play_music
+start playing Adele,play_music
+queue ambient music,play_music
+put on ambient music,play_music
+put on classical music,play_music
+play piano music,play_music
+message my brother: the meeting moved,send_message
+send my sister a message saying call me back,send_message
+text my sister that I need help,send_message
+send Dad a message saying call me back,send_message
+text Dad that call me back,send_message
+text Alex that the report is done,send_message
+send my brother a message saying I sent the file,send_message
+send Jordan a message saying dinner is ready,send_message
+text Alex that see you tomorrow,send_message
+send my sister a message saying I will be late,send_message
+send Alex a message saying I sent the file,send_message
+send the group a message saying the order arrived,send_message
+tell my sister see you tomorrow,send_message
+message Dad: I will be late,send_message
+text my sister that dinner is ready,send_message
+message Marcus: I will be late,send_message
+message Alex: I sent the file,send_message
+message the team: the order arrived,send_message
+text Sam that the meeting moved,send_message
+send my brother a message saying I need help,send_message
+tell Priya dinner is ready,send_message
+send the team a message saying call me back,send_message
+send Sam a message saying see you tomorrow,send_message
+tell the group the meeting moved,send_message
+tell my brother the report is done,send_message
+tell Sam see you tomorrow,send_message
+text the team that the meeting moved,send_message
+message my sister: I need help,send_message
+message my brother: the report is done,send_message
+tell the team see you tomorrow,send_message
+message Dad: see you tomorrow,send_message
+tell the group I will be late,send_message
+send Marcus a message saying see you tomorrow,send_message
+message Dad: the meeting moved,send_message
+text Dad that we are on schedule,send_message
+message Sam: see you tomorrow,send_message
+text Priya that the order arrived,send_message
+send my brother a message saying call me back,send_message
+tell Sam I need help,send_message
+tell the group call me back,send_message
+directions to the office,get_directions
+navigate to the museum,get_directions
+navigate to the airport,get_directions
+directions to the hospital,get_directions
+directions to the library,get_directions
+route me to the hospital,get_directions
+navigate to the university,get_directions
+navigate to the train station,get_directions
+route me to City Hall,get_directions
+take me to the hotel,get_directions
+route me to the stadium,get_directions
+navigate to the hotel,get_directions
+navigate to the library,get_directions
+take me to City Hall,get_directions
+directions to the airport,get_directions
+navigate to the stadium,get_directions
+route me to the train station,get_directions
+directions to the university,get_directions
+take me to the stadium,get_directions
+directions to the stadium,get_directions
+route me to the university,get_directions
+directions to the museum,get_directions
+take me to the train station,get_directions
+take me to the office,get_directions
+route me to the office,get_directions
+route me to the airport,get_directions
+take me to the hospital,get_directions
+navigate to the office,get_directions
+route me to the library,get_directions
+navigate to City Hall,get_directions
+route me to the museum,get_directions
+directions to the hotel,get_directions
+route me to the hotel,get_directions
+take me to the university,get_directions
+take me to the airport,get_directions
+take me to the museum,get_directions
+take me to the library,get_directions
+directions to City Hall,get_directions
+navigate to the hospital,get_directions
+directions to the train station,get_directions
