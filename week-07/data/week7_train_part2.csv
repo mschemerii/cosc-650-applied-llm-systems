@@ -1,0 +1,126 @@
+id,text,label,directness,slice,source
+tr-blo-05-00,The renewals workflow is waiting on Michael.,blocker,implicit,standard,synthetic
+tr-blo-05-01,The AEO report is waiting on Brittany.,blocker,implicit,standard,synthetic
+tr-blo-05-02,The sales automation is waiting on Finance.,blocker,implicit,standard,synthetic
+tr-blo-05-03,The training series is waiting on Product.,blocker,implicit,standard,synthetic
+tr-blo-05-04,The customer dashboard is waiting on Customer Success.,blocker,implicit,standard,synthetic
+tr-blo-06-00,Progress on the renewals workflow is stopped by the Brittany issue.,blocker,implicit,standard,synthetic
+tr-blo-06-01,Progress on the AEO report is stopped by the Finance issue.,blocker,implicit,standard,synthetic
+tr-blo-06-02,Progress on the sales automation is stopped by the Product issue.,blocker,implicit,standard,synthetic
+tr-blo-06-03,Progress on the training series is stopped by the Customer Success issue.,blocker,implicit,standard,synthetic
+tr-blo-06-04,Progress on the customer dashboard is stopped by the Michael issue.,blocker,implicit,standard,synthetic
+tr-blo-07-00,The renewals workflow cannot move forward until Finance responds.,blocker,implicit,standard,synthetic
+tr-blo-07-01,The AEO report cannot move forward until Product responds.,blocker,implicit,standard,synthetic
+tr-blo-07-02,The sales automation cannot move forward until Customer Success responds.,blocker,implicit,standard,synthetic
+tr-blo-07-03,The training series cannot move forward until Michael responds.,blocker,implicit,standard,synthetic
+tr-blo-07-04,The customer dashboard cannot move forward until Brittany responds.,blocker,implicit,standard,synthetic
+tr-blo-08-00,The renewals workflow is held up because Product has not confirmed access.,blocker,implicit,standard,synthetic
+tr-blo-08-01,The AEO report is held up because Customer Success has not confirmed access.,blocker,implicit,standard,synthetic
+tr-blo-08-02,The sales automation is held up because Michael has not confirmed access.,blocker,implicit,standard,synthetic
+tr-blo-08-03,The training series is held up because Brittany has not confirmed access.,blocker,implicit,standard,synthetic
+tr-blo-08-04,The customer dashboard is held up because Finance has not confirmed access.,blocker,implicit,standard,synthetic
+tr-blo-09-00,The unresolved Customer Success dependency blocks the renewals workflow.,blocker,implicit,standard,synthetic
+tr-blo-09-01,The unresolved Michael dependency blocks the AEO report.,blocker,implicit,standard,synthetic
+tr-blo-09-02,The unresolved Brittany dependency blocks the sales automation.,blocker,implicit,standard,synthetic
+tr-blo-09-03,The unresolved Finance dependency blocks the training series.,blocker,implicit,standard,synthetic
+tr-blo-09-04,The unresolved Product dependency blocks the customer dashboard.,blocker,implicit,standard,synthetic
+tr-fol-00-00,Can Michael confirm the source for the renewals workflow?,follow_up_question,explicit,standard,synthetic
+tr-fol-00-01,Can Brittany confirm the source for the AEO report?,follow_up_question,explicit,standard,synthetic
+tr-fol-00-02,Can Finance confirm the source for the sales automation?,follow_up_question,explicit,standard,synthetic
+tr-fol-00-03,Can Product confirm the source for the training series?,follow_up_question,explicit,standard,synthetic
+tr-fol-00-04,Can Customer Success confirm the source for the customer dashboard?,follow_up_question,explicit,standard,synthetic
+tr-fol-01-00,Which metric should Brittany use for the renewals workflow?,follow_up_question,explicit,standard,synthetic
+tr-fol-01-01,Which metric should Finance use for the AEO report?,follow_up_question,explicit,standard,synthetic
+tr-fol-01-02,Which metric should Product use for the sales automation?,follow_up_question,explicit,standard,synthetic
+tr-fol-01-03,Which metric should Customer Success use for the training series?,follow_up_question,explicit,standard,synthetic
+tr-fol-01-04,Which metric should Michael use for the customer dashboard?,follow_up_question,explicit,standard,synthetic
+tr-fol-02-00,Does Finance have access to the renewals workflow?,follow_up_question,explicit,standard,synthetic
+tr-fol-02-01,Does Product have access to the AEO report?,follow_up_question,explicit,standard,synthetic
+tr-fol-02-02,Does Customer Success have access to the sales automation?,follow_up_question,explicit,standard,synthetic
+tr-fol-02-03,Does Michael have access to the training series?,follow_up_question,explicit,standard,synthetic
+tr-fol-02-04,Does Brittany have access to the customer dashboard?,follow_up_question,explicit,standard,synthetic
+tr-fol-03-00,Who should approve the renewals workflow for Product?,follow_up_question,explicit,standard,synthetic
+tr-fol-03-01,Who should approve the AEO report for Customer Success?,follow_up_question,explicit,standard,synthetic
+tr-fol-03-02,Who should approve the sales automation for Michael?,follow_up_question,explicit,standard,synthetic
+tr-fol-03-03,Who should approve the training series for Brittany?,follow_up_question,explicit,standard,synthetic
+tr-fol-03-04,Who should approve the customer dashboard for Finance?,follow_up_question,explicit,standard,synthetic
+tr-fol-04-00,What does Customer Success still need for the renewals workflow?,follow_up_question,explicit,standard,synthetic
+tr-fol-04-01,What does Michael still need for the AEO report?,follow_up_question,explicit,standard,synthetic
+tr-fol-04-02,What does Brittany still need for the sales automation?,follow_up_question,explicit,standard,synthetic
+tr-fol-04-03,What does Finance still need for the training series?,follow_up_question,explicit,standard,synthetic
+tr-fol-04-04,What does Product still need for the customer dashboard?,follow_up_question,explicit,standard,synthetic
+tr-fol-05-00,Is the renewals workflow source authoritative for Michael?,follow_up_question,implicit,standard,synthetic
+tr-fol-05-01,Is the AEO report source authoritative for Brittany?,follow_up_question,implicit,standard,synthetic
+tr-fol-05-02,Is the sales automation source authoritative for Finance?,follow_up_question,implicit,standard,synthetic
+tr-fol-05-03,Is the training series source authoritative for Product?,follow_up_question,implicit,standard,synthetic
+tr-fol-05-04,Is the customer dashboard source authoritative for Customer Success?,follow_up_question,implicit,standard,synthetic
+tr-fol-06-00,When can Brittany review the renewals workflow?,follow_up_question,implicit,standard,synthetic
+tr-fol-06-01,When can Finance review the AEO report?,follow_up_question,implicit,standard,synthetic
+tr-fol-06-02,When can Product review the sales automation?,follow_up_question,implicit,standard,synthetic
+tr-fol-06-03,When can Customer Success review the training series?,follow_up_question,implicit,standard,synthetic
+tr-fol-06-04,When can Michael review the customer dashboard?,follow_up_question,implicit,standard,synthetic
+tr-fol-07-00,Which dataset should drive the renewals workflow for Finance?,follow_up_question,implicit,standard,synthetic
+tr-fol-07-01,Which dataset should drive the AEO report for Product?,follow_up_question,implicit,standard,synthetic
+tr-fol-07-02,Which dataset should drive the sales automation for Customer Success?,follow_up_question,implicit,standard,synthetic
+tr-fol-07-03,Which dataset should drive the training series for Michael?,follow_up_question,implicit,standard,synthetic
+tr-fol-07-04,Which dataset should drive the customer dashboard for Brittany?,follow_up_question,implicit,standard,synthetic
+tr-fol-08-00,Can Product confirm ownership of the renewals workflow?,follow_up_question,implicit,standard,synthetic
+tr-fol-08-01,Can Customer Success confirm ownership of the AEO report?,follow_up_question,implicit,standard,synthetic
+tr-fol-08-02,Can Michael confirm ownership of the sales automation?,follow_up_question,implicit,standard,synthetic
+tr-fol-08-03,Can Brittany confirm ownership of the training series?,follow_up_question,implicit,standard,synthetic
+tr-fol-08-04,Can Finance confirm ownership of the customer dashboard?,follow_up_question,implicit,standard,synthetic
+tr-fol-09-00,How should Customer Success calculate the renewals workflow metric?,follow_up_question,implicit,standard,synthetic
+tr-fol-09-01,How should Michael calculate the AEO report metric?,follow_up_question,implicit,standard,synthetic
+tr-fol-09-02,How should Brittany calculate the sales automation metric?,follow_up_question,implicit,standard,synthetic
+tr-fol-09-03,How should Finance calculate the training series metric?,follow_up_question,implicit,standard,synthetic
+tr-fol-09-04,How should Product calculate the customer dashboard metric?,follow_up_question,implicit,standard,synthetic
+tr-con-00-00,Michael discussed the renewals workflow during the meeting.,context,explicit,standard,synthetic
+tr-con-00-01,Brittany discussed the AEO report during the meeting.,context,explicit,standard,synthetic
+tr-con-00-02,Finance discussed the sales automation during the meeting.,context,explicit,standard,synthetic
+tr-con-00-03,Product discussed the training series during the meeting.,context,explicit,standard,synthetic
+tr-con-00-04,Customer Success discussed the customer dashboard during the meeting.,context,explicit,standard,synthetic
+tr-con-01-00,The team reviewed the renewals workflow with Brittany.,context,explicit,standard,synthetic
+tr-con-01-01,The team reviewed the AEO report with Finance.,context,explicit,standard,synthetic
+tr-con-01-02,The team reviewed the sales automation with Product.,context,explicit,standard,synthetic
+tr-con-01-03,The team reviewed the training series with Customer Success.,context,explicit,standard,synthetic
+tr-con-01-04,The team reviewed the customer dashboard with Michael.,context,explicit,standard,synthetic
+tr-con-02-00,Finance described the current renewals workflow process.,context,explicit,standard,synthetic
+tr-con-02-01,Product described the current AEO report process.,context,explicit,standard,synthetic
+tr-con-02-02,Customer Success described the current sales automation process.,context,explicit,standard,synthetic
+tr-con-02-03,Michael described the current training series process.,context,explicit,standard,synthetic
+tr-con-02-04,Brittany described the current customer dashboard process.,context,explicit,standard,synthetic
+tr-con-03-00,The meeting covered background on the renewals workflow for Product.,context,explicit,standard,synthetic
+tr-con-03-01,The meeting covered background on the AEO report for Customer Success.,context,explicit,standard,synthetic
+tr-con-03-02,The meeting covered background on the sales automation for Michael.,context,explicit,standard,synthetic
+tr-con-03-03,The meeting covered background on the training series for Brittany.,context,explicit,standard,synthetic
+tr-con-03-04,The meeting covered background on the customer dashboard for Finance.,context,explicit,standard,synthetic
+tr-con-04-00,Customer Success shared information about the renewals workflow.,context,explicit,standard,synthetic
+tr-con-04-01,Michael shared information about the AEO report.,context,explicit,standard,synthetic
+tr-con-04-02,Brittany shared information about the sales automation.,context,explicit,standard,synthetic
+tr-con-04-03,Finance shared information about the training series.,context,explicit,standard,synthetic
+tr-con-04-04,Product shared information about the customer dashboard.,context,explicit,standard,synthetic
+tr-con-05-00,The group compared options for the renewals workflow with Michael.,context,implicit,standard,synthetic
+tr-con-05-01,The group compared options for the AEO report with Brittany.,context,implicit,standard,synthetic
+tr-con-05-02,The group compared options for the sales automation with Finance.,context,implicit,standard,synthetic
+tr-con-05-03,The group compared options for the training series with Product.,context,implicit,standard,synthetic
+tr-con-05-04,The group compared options for the customer dashboard with Customer Success.,context,implicit,standard,synthetic
+tr-con-06-00,Brittany summarized the history of the renewals workflow.,context,implicit,standard,synthetic
+tr-con-06-01,Finance summarized the history of the AEO report.,context,implicit,standard,synthetic
+tr-con-06-02,Product summarized the history of the sales automation.,context,implicit,standard,synthetic
+tr-con-06-03,Customer Success summarized the history of the training series.,context,implicit,standard,synthetic
+tr-con-06-04,Michael summarized the history of the customer dashboard.,context,implicit,standard,synthetic
+tr-con-07-00,The team talked through the renewals workflow with Finance.,context,implicit,standard,synthetic
+tr-con-07-01,The team talked through the AEO report with Product.,context,implicit,standard,synthetic
+tr-con-07-02,The team talked through the sales automation with Customer Success.,context,implicit,standard,synthetic
+tr-con-07-03,The team talked through the training series with Michael.,context,implicit,standard,synthetic
+tr-con-07-04,The team talked through the customer dashboard with Brittany.,context,implicit,standard,synthetic
+tr-con-08-00,Product presented the current state of the renewals workflow.,context,implicit,standard,synthetic
+tr-con-08-01,Customer Success presented the current state of the AEO report.,context,implicit,standard,synthetic
+tr-con-08-02,Michael presented the current state of the sales automation.,context,implicit,standard,synthetic
+tr-con-08-03,Brittany presented the current state of the training series.,context,implicit,standard,synthetic
+tr-con-08-04,Finance presented the current state of the customer dashboard.,context,implicit,standard,synthetic
+tr-con-09-00,The discussion included the renewals workflow and Customer Success.,context,implicit,standard,synthetic
+tr-con-09-01,The discussion included the AEO report and Michael.,context,implicit,standard,synthetic
+tr-con-09-02,The discussion included the sales automation and Brittany.,context,implicit,standard,synthetic
+tr-con-09-03,The discussion included the training series and Finance.,context,implicit,standard,synthetic
+tr-con-09-04,The discussion included the customer dashboard and Product.,context,implicit,standard,synthetic
