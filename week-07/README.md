@@ -4,12 +4,15 @@ COSC 650 - Applied LLM Systems
 
 ## Assignment
 
-- `week7_adaptation_decision.ipynb` — dataset quality checks, local retrieval-selected few-shot adaptation, Gemini Flash-Lite evaluation, failure-slice analysis, and adaptation decision memo.
-- `week7_train.csv` — 200 synthetic training examples, balanced across five intent labels.
-- `week7_eval.csv` — 50 held-out evaluation examples, balanced across the same five labels.
-- `week7_eval_cache.json` — cache populated by the notebook so completed Gemini calls are not repeated.
+The Week 7 assignment is self-contained in the notebook, with only the two required dataset files stored alongside it:
 
-The measured comparison uses a deterministic 25-example balanced subset to stay within free-tier API limits. Run the notebook with `GEMINI_API_KEY`, save all outputs, fill the measured-result placeholders in the decision memo, and export the executed notebook to HTML for Canvas.
+- `week7_adaptation_decision.ipynb`
+- `week7_train.csv` — 200 training examples
+- `week7_eval.csv` — 50 held-out evaluation examples
+
+The notebook performs the data-quality checks, local retrieval-selected dynamic few-shot adaptation, Gemini Flash-Lite evaluation, caching, failure analysis, and final adaptation decision. Runtime cache files are created automatically when needed and are not committed as assignment artifacts.
+
+For Canvas, run the notebook with `GEMINI_API_KEY`, save the executed outputs, and export the completed notebook to HTML or PDF.
 
 ## Discussion
 
