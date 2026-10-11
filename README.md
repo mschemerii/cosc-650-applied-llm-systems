@@ -18,7 +18,8 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | [Week 4](week-04/) | Tool calling and structured function calling | Built a complete Gemini tool-calling loop with three constrained JSON-schema tools, guarded arithmetic code execution, multi-tool sequencing, structured failure handling, and successful recovery. A separate discussion experiment compares loose and tight tool schemas. |
 | [Week 5](week-05/) | RAG and retrieval evaluation | Built an eight-document RAG pipeline with local MiniLM/MPNet embeddings, FAISS retrieval, ten labeled queries, chunk-level precision/recall, and grounded Gemini generation. A separate discussion compares three chunking strategies. |
 | [Week 6](week-06/) | Query transformation and re-ranking | Extended the Week 5 retriever with Gemini Flash-Lite multi-query transformation, reciprocal-rank fusion, transformation-only evaluation, and a local cross-encoder reranker. The executed run showed transformation-only MRR 0.850 versus baseline 0.900, while reranking improved final MRR to 1.000. |
-| Weeks 7–8 | Upcoming topics | Additional weekly notebooks and experiments will be added as the course progresses. |
+| [Week 7](week-07/) | Adaptation decision and production dataset | Built a 200-example training set and 50-example held-out set with quality controls, then compared Gemini Flash-Lite zero-shot classification with local retrieval-selected dynamic few-shot adaptation and included failure-slice analysis plus an adaptation decision memo. |
+| Week 8 | Upcoming topic | Additional work will be added as the course progresses. |
 
 ## Repository Organization
 
@@ -35,7 +36,6 @@ Technologies used throughout the course may include:
 - Jupyter notebooks and Google Colab
 - Hugging Face Transformers
 - Google Gemini
-- tiktoken
 - JSON Schema
 - LLM tool and function calling
 - Structured outputs
