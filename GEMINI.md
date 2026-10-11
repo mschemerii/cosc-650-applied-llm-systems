@@ -12,8 +12,14 @@ Gemini Flash-Lite is used for the measured query transformations. The analysis, 
 
 ## Week 7
 
-Week 7 evaluates no-GPU adaptation for a five-label intent-classification task. The committed synthetic dataset contains 200 balanced training examples and 50 balanced held-out evaluation examples. The notebook validates format, deduplication, train/evaluation leakage, label balance, and token-length distribution.
+Week 7 evaluates no-GPU adaptation for a five-label meeting-transcript classification task: `decision`, `action_item`, `blocker`, `follow_up_question`, and `context`.
 
-Dynamic few-shot selection runs locally with `sentence-transformers/all-MiniLM-L6-v2`. Gemini Flash-Lite is the only generative model used for assignment evaluation data. The measured comparison uses the same deterministic 25-example balanced subset for zero-shot and dynamic few-shot conditions, with responses cached to avoid duplicate API calls.
+The deterministic synthetic dataset contains **250 balanced training examples** and **50 balanced held-out evaluation examples**. The notebook validates format, duplicates, train/evaluation leakage, label balance, and token-length distribution. A predeclared five-example `contrastive_challenge` slice places competing-label language in the held-out inputs to test whether dynamic few-shot retrieval can introduce negative transfer.
 
-The final analysis must use the executed notebook's measured accuracy and observed failure slice. No fine-tuning is performed. Current Gemini API documentation states that general model tuning is not supported, so fine-tuning is evaluated only as a future decision condition.
+Dynamic few-shot selection runs locally with `sentence-transformers/all-MiniLM-L6-v2`. For each evaluated input, the four most relevant training examples are inserted into the prompt. Gemini Flash-Lite is used for both the zero-shot baseline and dynamic few-shot condition.
+
+The primary measured run contains 25 balanced examples and always includes all five challenge cases. If that run contains no few-shot underperformance, the notebook automatically evaluates the remaining held-out examples and recomputes the results over all 50 rather than inventing a failure case.
+
+`GEMINI_API_KEY` is read from Google Colab Secrets. Responses are cached only in memory during the session. No `.env`, Google Drive mount, or JSON cache file is used.
+
+The final results and decision memo are generated from the current executed metrics. The research note is included in the notebook. No fine-tuning is performed; fine-tuning is evaluated only as a future engineering decision.
