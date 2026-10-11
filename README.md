@@ -24,7 +24,6 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 ## Repository Organization
 
 - `week-01/` through `week-08/` — weekly assignments, experiments, discussions, and notebooks
-- `notes/` — research notes and reading annotations
 - `project/` — final project code and documentation
 - `GEMINI.md` — project context and conventions for AI coding assistants
 
