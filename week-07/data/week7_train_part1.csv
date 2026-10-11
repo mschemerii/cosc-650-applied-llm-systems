@@ -1,0 +1,126 @@
+id,text,label,directness,slice,source
+tr-dec-00-00,We decided to use Michael for the renewals workflow.,decision,explicit,standard,synthetic
+tr-dec-00-01,We decided to use Brittany for the AEO report.,decision,explicit,standard,synthetic
+tr-dec-00-02,We decided to use Finance for the sales automation.,decision,explicit,standard,synthetic
+tr-dec-00-03,We decided to use Product for the training series.,decision,explicit,standard,synthetic
+tr-dec-00-04,We decided to use Customer Success for the customer dashboard.,decision,explicit,standard,synthetic
+tr-dec-01-00,The team approved Brittany as owner of the renewals workflow.,decision,explicit,standard,synthetic
+tr-dec-01-01,The team approved Finance as owner of the AEO report.,decision,explicit,standard,synthetic
+tr-dec-01-02,The team approved Product as owner of the sales automation.,decision,explicit,standard,synthetic
+tr-dec-01-03,The team approved Customer Success as owner of the training series.,decision,explicit,standard,synthetic
+tr-dec-01-04,The team approved Michael as owner of the customer dashboard.,decision,explicit,standard,synthetic
+tr-dec-02-00,We will keep the renewals workflow human-reviewed by Finance.,decision,explicit,standard,synthetic
+tr-dec-02-01,We will keep the AEO report human-reviewed by Product.,decision,explicit,standard,synthetic
+tr-dec-02-02,We will keep the sales automation human-reviewed by Customer Success.,decision,explicit,standard,synthetic
+tr-dec-02-03,We will keep the training series human-reviewed by Michael.,decision,explicit,standard,synthetic
+tr-dec-02-04,We will keep the customer dashboard human-reviewed by Brittany.,decision,explicit,standard,synthetic
+tr-dec-03-00,Final decision: Product will lead the renewals workflow.,decision,explicit,standard,synthetic
+tr-dec-03-01,Final decision: Customer Success will lead the AEO report.,decision,explicit,standard,synthetic
+tr-dec-03-02,Final decision: Michael will lead the sales automation.,decision,explicit,standard,synthetic
+tr-dec-03-03,Final decision: Brittany will lead the training series.,decision,explicit,standard,synthetic
+tr-dec-03-04,Final decision: Finance will lead the customer dashboard.,decision,explicit,standard,synthetic
+tr-dec-04-00,The selected direction is Customer Success for the renewals workflow.,decision,explicit,standard,synthetic
+tr-dec-04-01,The selected direction is Michael for the AEO report.,decision,explicit,standard,synthetic
+tr-dec-04-02,The selected direction is Brittany for the sales automation.,decision,explicit,standard,synthetic
+tr-dec-04-03,The selected direction is Finance for the training series.,decision,explicit,standard,synthetic
+tr-dec-04-04,The selected direction is Product for the customer dashboard.,decision,explicit,standard,synthetic
+tr-dec-05-00,We agreed the renewals workflow will use Michael.,decision,implicit,standard,synthetic
+tr-dec-05-01,We agreed the AEO report will use Brittany.,decision,implicit,standard,synthetic
+tr-dec-05-02,We agreed the sales automation will use Finance.,decision,implicit,standard,synthetic
+tr-dec-05-03,We agreed the training series will use Product.,decision,implicit,standard,synthetic
+tr-dec-05-04,We agreed the customer dashboard will use Customer Success.,decision,implicit,standard,synthetic
+tr-dec-06-00,The choice is to have Brittany own the renewals workflow.,decision,implicit,standard,synthetic
+tr-dec-06-01,The choice is to have Finance own the AEO report.,decision,implicit,standard,synthetic
+tr-dec-06-02,The choice is to have Product own the sales automation.,decision,implicit,standard,synthetic
+tr-dec-06-03,The choice is to have Customer Success own the training series.,decision,implicit,standard,synthetic
+tr-dec-06-04,The choice is to have Michael own the customer dashboard.,decision,implicit,standard,synthetic
+tr-dec-07-00,The group committed to Finance for the renewals workflow.,decision,implicit,standard,synthetic
+tr-dec-07-01,The group committed to Product for the AEO report.,decision,implicit,standard,synthetic
+tr-dec-07-02,The group committed to Customer Success for the sales automation.,decision,implicit,standard,synthetic
+tr-dec-07-03,The group committed to Michael for the training series.,decision,implicit,standard,synthetic
+tr-dec-07-04,The group committed to Brittany for the customer dashboard.,decision,implicit,standard,synthetic
+tr-dec-08-00,We are going forward with Product on the renewals workflow.,decision,implicit,standard,synthetic
+tr-dec-08-01,We are going forward with Customer Success on the AEO report.,decision,implicit,standard,synthetic
+tr-dec-08-02,We are going forward with Michael on the sales automation.,decision,implicit,standard,synthetic
+tr-dec-08-03,We are going forward with Brittany on the training series.,decision,implicit,standard,synthetic
+tr-dec-08-04,We are going forward with Finance on the customer dashboard.,decision,implicit,standard,synthetic
+tr-dec-09-00,The approved approach assigns the renewals workflow to Customer Success.,decision,implicit,standard,synthetic
+tr-dec-09-01,The approved approach assigns the AEO report to Michael.,decision,implicit,standard,synthetic
+tr-dec-09-02,The approved approach assigns the sales automation to Brittany.,decision,implicit,standard,synthetic
+tr-dec-09-03,The approved approach assigns the training series to Finance.,decision,implicit,standard,synthetic
+tr-dec-09-04,The approved approach assigns the customer dashboard to Product.,decision,implicit,standard,synthetic
+tr-act-00-00,Michael should test the renewals workflow.,action_item,explicit,standard,synthetic
+tr-act-00-01,Brittany should test the AEO report.,action_item,explicit,standard,synthetic
+tr-act-00-02,Finance should test the sales automation.,action_item,explicit,standard,synthetic
+tr-act-00-03,Product should test the training series.,action_item,explicit,standard,synthetic
+tr-act-00-04,Customer Success should test the customer dashboard.,action_item,explicit,standard,synthetic
+tr-act-01-00,Please have Brittany validate the renewals workflow.,action_item,explicit,standard,synthetic
+tr-act-01-01,Please have Finance validate the AEO report.,action_item,explicit,standard,synthetic
+tr-act-01-02,Please have Product validate the sales automation.,action_item,explicit,standard,synthetic
+tr-act-01-03,Please have Customer Success validate the training series.,action_item,explicit,standard,synthetic
+tr-act-01-04,Please have Michael validate the customer dashboard.,action_item,explicit,standard,synthetic
+tr-act-02-00,Finance needs to update the renewals workflow.,action_item,explicit,standard,synthetic
+tr-act-02-01,Product needs to update the AEO report.,action_item,explicit,standard,synthetic
+tr-act-02-02,Customer Success needs to update the sales automation.,action_item,explicit,standard,synthetic
+tr-act-02-03,Michael needs to update the training series.,action_item,explicit,standard,synthetic
+tr-act-02-04,Brittany needs to update the customer dashboard.,action_item,explicit,standard,synthetic
+tr-act-03-00,Action item: Product will document the renewals workflow results.,action_item,explicit,standard,synthetic
+tr-act-03-01,Action item: Customer Success will document the AEO report results.,action_item,explicit,standard,synthetic
+tr-act-03-02,Action item: Michael will document the sales automation results.,action_item,explicit,standard,synthetic
+tr-act-03-03,Action item: Brittany will document the training series results.,action_item,explicit,standard,synthetic
+tr-act-03-04,Action item: Finance will document the customer dashboard results.,action_item,explicit,standard,synthetic
+tr-act-04-00,Have Customer Success review the renewals workflow before Friday.,action_item,explicit,standard,synthetic
+tr-act-04-01,Have Michael review the AEO report before Friday.,action_item,explicit,standard,synthetic
+tr-act-04-02,Have Brittany review the sales automation before Friday.,action_item,explicit,standard,synthetic
+tr-act-04-03,Have Finance review the training series before Friday.,action_item,explicit,standard,synthetic
+tr-act-04-04,Have Product review the customer dashboard before Friday.,action_item,explicit,standard,synthetic
+tr-act-05-00,Michael should confirm the renewals workflow fields.,action_item,implicit,standard,synthetic
+tr-act-05-01,Brittany should confirm the AEO report fields.,action_item,implicit,standard,synthetic
+tr-act-05-02,Finance should confirm the sales automation fields.,action_item,implicit,standard,synthetic
+tr-act-05-03,Product should confirm the training series fields.,action_item,implicit,standard,synthetic
+tr-act-05-04,Customer Success should confirm the customer dashboard fields.,action_item,implicit,standard,synthetic
+tr-act-06-00,Ask Brittany to compare the renewals workflow output.,action_item,implicit,standard,synthetic
+tr-act-06-01,Ask Finance to compare the AEO report output.,action_item,implicit,standard,synthetic
+tr-act-06-02,Ask Product to compare the sales automation output.,action_item,implicit,standard,synthetic
+tr-act-06-03,Ask Customer Success to compare the training series output.,action_item,implicit,standard,synthetic
+tr-act-06-04,Ask Michael to compare the customer dashboard output.,action_item,implicit,standard,synthetic
+tr-act-07-00,Finance needs to prepare the renewals workflow demo.,action_item,implicit,standard,synthetic
+tr-act-07-01,Product needs to prepare the AEO report demo.,action_item,implicit,standard,synthetic
+tr-act-07-02,Customer Success needs to prepare the sales automation demo.,action_item,implicit,standard,synthetic
+tr-act-07-03,Michael needs to prepare the training series demo.,action_item,implicit,standard,synthetic
+tr-act-07-04,Brittany needs to prepare the customer dashboard demo.,action_item,implicit,standard,synthetic
+tr-act-08-00,Please have Product verify the renewals workflow source.,action_item,implicit,standard,synthetic
+tr-act-08-01,Please have Customer Success verify the AEO report source.,action_item,implicit,standard,synthetic
+tr-act-08-02,Please have Michael verify the sales automation source.,action_item,implicit,standard,synthetic
+tr-act-08-03,Please have Brittany verify the training series source.,action_item,implicit,standard,synthetic
+tr-act-08-04,Please have Finance verify the customer dashboard source.,action_item,implicit,standard,synthetic
+tr-act-09-00,Customer Success will follow up on the renewals workflow.,action_item,implicit,standard,synthetic
+tr-act-09-01,Michael will follow up on the AEO report.,action_item,implicit,standard,synthetic
+tr-act-09-02,Brittany will follow up on the sales automation.,action_item,implicit,standard,synthetic
+tr-act-09-03,Finance will follow up on the training series.,action_item,implicit,standard,synthetic
+tr-act-09-04,Product will follow up on the customer dashboard.,action_item,implicit,standard,synthetic
+tr-blo-00-00,The renewals workflow cannot proceed because Michael access is missing.,blocker,explicit,standard,synthetic
+tr-blo-00-01,The AEO report cannot proceed because Brittany access is missing.,blocker,explicit,standard,synthetic
+tr-blo-00-02,The sales automation cannot proceed because Finance access is missing.,blocker,explicit,standard,synthetic
+tr-blo-00-03,The training series cannot proceed because Product access is missing.,blocker,explicit,standard,synthetic
+tr-blo-00-04,The customer dashboard cannot proceed because Customer Success access is missing.,blocker,explicit,standard,synthetic
+tr-blo-01-00,The renewals workflow is blocked until Brittany approves it.,blocker,explicit,standard,synthetic
+tr-blo-01-01,The AEO report is blocked until Finance approves it.,blocker,explicit,standard,synthetic
+tr-blo-01-02,The sales automation is blocked until Product approves it.,blocker,explicit,standard,synthetic
+tr-blo-01-03,The training series is blocked until Customer Success approves it.,blocker,explicit,standard,synthetic
+tr-blo-01-04,The customer dashboard is blocked until Michael approves it.,blocker,explicit,standard,synthetic
+tr-blo-02-00,Work on the renewals workflow is delayed by the Finance dependency.,blocker,explicit,standard,synthetic
+tr-blo-02-01,Work on the AEO report is delayed by the Product dependency.,blocker,explicit,standard,synthetic
+tr-blo-02-02,Work on the sales automation is delayed by the Customer Success dependency.,blocker,explicit,standard,synthetic
+tr-blo-02-03,Work on the training series is delayed by the Michael dependency.,blocker,explicit,standard,synthetic
+tr-blo-02-04,Work on the customer dashboard is delayed by the Brittany dependency.,blocker,explicit,standard,synthetic
+tr-blo-03-00,The remaining issue is missing Product data for the renewals workflow.,blocker,explicit,standard,synthetic
+tr-blo-03-01,The remaining issue is missing Customer Success data for the AEO report.,blocker,explicit,standard,synthetic
+tr-blo-03-02,The remaining issue is missing Michael data for the sales automation.,blocker,explicit,standard,synthetic
+tr-blo-03-03,The remaining issue is missing Brittany data for the training series.,blocker,explicit,standard,synthetic
+tr-blo-03-04,The remaining issue is missing Finance data for the customer dashboard.,blocker,explicit,standard,synthetic
+tr-blo-04-00,We cannot finish the renewals workflow while Customer Success access is unavailable.,blocker,explicit,standard,synthetic
+tr-blo-04-01,We cannot finish the AEO report while Michael access is unavailable.,blocker,explicit,standard,synthetic
+tr-blo-04-02,We cannot finish the sales automation while Brittany access is unavailable.,blocker,explicit,standard,synthetic
+tr-blo-04-03,We cannot finish the training series while Finance access is unavailable.,blocker,explicit,standard,synthetic
+tr-blo-04-04,We cannot finish the customer dashboard while Product access is unavailable.,blocker,explicit,standard,synthetic
