@@ -24,8 +24,12 @@ For Canvas, run **Runtime → Run all**, save the executed notebook, and export 
 ## Repository artifacts
 
 - `week7_adaptation_decision.ipynb` — assignment notebook
-- `week7_dataset.py` — deterministic dataset source used to reproduce the 250/50 dataset outside the notebook
+- `data/week7_train_part1.csv` — first 125 training examples
+- `data/week7_train_part2.csv` — remaining 125 training examples
+- `data/week7_eval.csv` — 50 held-out evaluation examples, including the five-example contrastive challenge slice
 - `discussion-finetuning-decision.md` — Week 7 discussion deliverable
+
+The CSV files are repository artifacts for the dataset requirement. The notebook is self-contained and regenerates the same dataset internally, so Canvas execution does not depend on external CSV files.
 
 ## Discussion
 
