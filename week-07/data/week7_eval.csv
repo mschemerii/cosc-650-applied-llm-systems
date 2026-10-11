@@ -1,0 +1,51 @@
+id,text,label,directness,slice,source
+ev-dec-00-00,That settles it: Michael is the path forward for the renewals workflow.,decision,explicit,standard,synthetic
+ev-dec-00-01,That settles it: Finance is the path forward for the AEO report.,decision,explicit,standard,synthetic
+ev-dec-00-02,That settles it: Customer Success is the path forward for the sales automation.,decision,explicit,standard,synthetic
+ev-dec-00-03,That settles it: Brittany is the path forward for the training series.,decision,explicit,standard,synthetic
+ev-dec-00-04,That settles it: Product is the path forward for the customer dashboard.,decision,explicit,standard,synthetic
+ev-dec-01-00,No need to revisit options; Brittany owns the renewals workflow.,decision,implicit,standard,synthetic
+ev-dec-01-01,No need to revisit options; Product owns the AEO report.,decision,implicit,standard,synthetic
+ev-dec-01-02,No need to revisit options; Michael owns the sales automation.,decision,implicit,standard,synthetic
+ev-dec-01-03,No need to revisit options; Finance owns the training series.,decision,implicit,standard,synthetic
+ev-act-00-00,"Before next week, Michael needs to check the renewals workflow.",action_item,explicit,standard,synthetic
+ev-act-00-01,"Before next week, Finance needs to check the AEO report.",action_item,explicit,standard,synthetic
+ev-act-00-02,"Before next week, Customer Success needs to check the sales automation.",action_item,explicit,standard,synthetic
+ev-act-00-03,"Before next week, Brittany needs to check the training series.",action_item,explicit,standard,synthetic
+ev-act-00-04,"Before next week, Product needs to check the customer dashboard.",action_item,explicit,standard,synthetic
+ev-act-01-00,Someone from Brittany should verify the renewals workflow.,action_item,implicit,standard,synthetic
+ev-act-01-01,Someone from Product should verify the AEO report.,action_item,implicit,standard,synthetic
+ev-act-01-02,Someone from Michael should verify the sales automation.,action_item,implicit,standard,synthetic
+ev-act-01-03,Someone from Finance should verify the training series.,action_item,implicit,standard,synthetic
+ev-blo-00-00,Everything else is ready; the renewals workflow still cannot proceed without Michael.,blocker,explicit,standard,synthetic
+ev-blo-00-01,Everything else is ready; the AEO report still cannot proceed without Finance.,blocker,explicit,standard,synthetic
+ev-blo-00-02,Everything else is ready; the sales automation still cannot proceed without Customer Success.,blocker,explicit,standard,synthetic
+ev-blo-00-03,Everything else is ready; the training series still cannot proceed without Brittany.,blocker,explicit,standard,synthetic
+ev-blo-00-04,Everything else is ready; the customer dashboard still cannot proceed without Product.,blocker,explicit,standard,synthetic
+ev-blo-01-00,The renewals workflow is ready except for the unresolved Brittany dependency.,blocker,implicit,standard,synthetic
+ev-blo-01-01,The AEO report is ready except for the unresolved Product dependency.,blocker,implicit,standard,synthetic
+ev-blo-01-02,The sales automation is ready except for the unresolved Michael dependency.,blocker,implicit,standard,synthetic
+ev-blo-01-03,The training series is ready except for the unresolved Finance dependency.,blocker,implicit,standard,synthetic
+ev-fol-00-00,We still need an answer from Michael about the renewals workflow.,follow_up_question,explicit,standard,synthetic
+ev-fol-00-01,We still need an answer from Finance about the AEO report.,follow_up_question,explicit,standard,synthetic
+ev-fol-00-02,We still need an answer from Customer Success about the sales automation.,follow_up_question,explicit,standard,synthetic
+ev-fol-00-03,We still need an answer from Brittany about the training series.,follow_up_question,explicit,standard,synthetic
+ev-fol-00-04,We still need an answer from Product about the customer dashboard.,follow_up_question,explicit,standard,synthetic
+ev-fol-01-00,It is unclear whether Brittany can approve the renewals workflow.,follow_up_question,implicit,standard,synthetic
+ev-fol-01-01,It is unclear whether Product can approve the AEO report.,follow_up_question,implicit,standard,synthetic
+ev-fol-01-02,It is unclear whether Michael can approve the sales automation.,follow_up_question,implicit,standard,synthetic
+ev-fol-01-03,It is unclear whether Finance can approve the training series.,follow_up_question,implicit,standard,synthetic
+ev-con-00-00,One option discussed was involving Michael in the renewals workflow.,context,explicit,standard,synthetic
+ev-con-00-01,One option discussed was involving Finance in the AEO report.,context,explicit,standard,synthetic
+ev-con-00-02,One option discussed was involving Customer Success in the sales automation.,context,explicit,standard,synthetic
+ev-con-00-03,One option discussed was involving Brittany in the training series.,context,explicit,standard,synthetic
+ev-con-00-04,One option discussed was involving Product in the customer dashboard.,context,explicit,standard,synthetic
+ev-con-01-00,Brittany mentioned the renewals workflow as possible future work.,context,implicit,standard,synthetic
+ev-con-01-01,Product mentioned the AEO report as possible future work.,context,implicit,standard,synthetic
+ev-con-01-02,Michael mentioned the sales automation as possible future work.,context,implicit,standard,synthetic
+ev-con-01-03,Finance mentioned the training series as possible future work.,context,implicit,standard,synthetic
+ev-dec-challenge,The open question was ownership of the AEO report. There is nothing left to answer now: Product is the owner.,decision,implicit,contrastive_challenge,synthetic
+ev-act-challenge,There is no decision about the sales automation today; before next week Brittany still has to verify it.,action_item,implicit,contrastive_challenge,synthetic
+ev-blo-challenge,"Ownership of the renewals workflow is settled with Finance, but nothing can move until Finance access is available.",blocker,implicit,contrastive_challenge,synthetic
+ev-fol-challenge,"No one is blocked yet, but the team still does not know which customer-dashboard metric Customer Success should use.",follow_up_question,implicit,contrastive_challenge,synthetic
+ev-con-challenge,Brittany walked through the decision another team had made on the training series; our group only reviewed that background.,context,implicit,contrastive_challenge,synthetic
