@@ -1,0 +1,51 @@
+text,label
+don't let me forget to call the dentist tomorrow,set_reminder
+make sure I remember the rent payment Friday morning,set_reminder
+I need a nudge to back up my laptop tonight,set_reminder
+schedule a reminder for the license renewal next week,set_reminder
+at noon remind me about buying groceries,set_reminder
+I need to remember the client email this afternoon,set_reminder
+give me a reminder to walk the dog before bed,set_reminder
+remind me Friday morning to book my flight,set_reminder
+please prompt me to submit the report on Monday,set_reminder
+I want a reminder for taking medication tonight,set_reminder
+what is the forecast in Denver tomorrow,get_weather
+do I need an umbrella in Paris tonight,get_weather
+how warm will Cairo be this afternoon,get_weather
+what conditions are expected in Oslo Friday morning,get_weather
+is Seoul getting rain this weekend,get_weather
+check tomorrow's temperature for Lima,get_weather
+what will the weather be like in Madrid next week,get_weather
+give me Dublin's forecast for Monday,get_weather
+is it hot in Lagos today,get_weather
+show the weather outlook for Tokyo tonight,get_weather
+I'd like to hear some jazz,play_music
+can you start Adele,play_music
+give me some lofi beats,play_music
+put Miles Davis on,play_music
+I feel like listening to classical music,play_music
+start a reggaeton playlist,play_music
+let me hear Fela Kuti,play_music
+play something ambient,play_music
+turn on some rock,play_music
+I want piano music,play_music
+let Sam know I sent the file,send_message
+send Priya a note that dinner is ready,send_message
+tell Dad the meeting moved,send_message
+write my sister that I will be late,send_message
+let the team know we are on schedule,send_message
+send Marcus the report is done,send_message
+message Alex to call me back,send_message
+tell Jordan the order arrived,send_message
+send the group a note saying see you tomorrow,send_message
+text my brother that I need help,send_message
+how do I get to the airport,get_directions
+show me the way to the library,get_directions
+guide me to City Hall,get_directions
+what route should I take to the hospital,get_directions
+help me get to the train station,get_directions
+map a route to the museum,get_directions
+I need navigation to the hotel,get_directions
+show the route to the office,get_directions
+how can I reach the stadium,get_directions
+guide me to the university,get_directions
