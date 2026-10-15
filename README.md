@@ -13,8 +13,7 @@ The system combines structured prompting, deterministic validation, MiniLM/FAISS
 Key capstone artifacts:
 
 - [Week 8 README and architecture](week-08/README.md)
-- [Self-contained capstone notebook](week-08/week8_meeting_to_action_capstone.ipynb)
-- [Research note](week-08/research-note.md)
+- [Self-contained capstone notebook](week-08/week8_meeting_to_action_capstone.ipynb) — includes the dynamically generated research note at the end
 
 ## Course Context
 
@@ -33,7 +32,7 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | [Week 5](week-05/) | RAG and retrieval evaluation | Built an eight-document RAG pipeline with local MiniLM/MPNet embeddings, FAISS retrieval, ten labeled queries, chunk-level precision/recall, and grounded Gemini generation. A separate discussion compares three chunking strategies. |
 | [Week 6](week-06/) | Query transformation and re-ranking | Extended the Week 5 retriever with Gemini Flash-Lite multi-query transformation, reciprocal-rank fusion, transformation-only evaluation, and a local cross-encoder reranker. The executed run showed transformation-only MRR 0.850 versus baseline 0.900, while reranking improved final MRR to 1.000. |
 | [Week 7](week-07/) | Adaptation decision and production dataset | Built a deterministic 250-example training set and 50-example held-out meeting-transcript classification set, then compared Gemini Flash-Lite zero-shot classification with local MiniLM retrieval-selected dynamic few-shot adaptation. The executed run scored **100.0% zero-shot vs. 96.0% dynamic few-shot**; `action_item` was the clearest underperforming slice at **100.0% vs. 80.0%**, supporting the simpler prompt-based approach. |
-| [Week 8](week-08/) | Integrated LLM system | Built the self-contained Meeting-to-Action Assistant capstone by reusing Weeks 3–7 components, with a 10-case held-out evaluation, A/B/C ablation, LLM-as-judge pass, required failure trace, and targeted mitigation. Week 8 also includes the external-dependency threat model. |
+| [Week 8](week-08/) | Integrated LLM system | Built the self-contained Meeting-to-Action Assistant capstone by reusing Weeks 3–7 components, with a 10-case held-out evaluation, A/B/C ablation, LLM-as-judge pass, required failure trace, targeted mitigation, and a research note generated from the measured results at the end of the notebook. Week 8 also includes the external-dependency threat model. |
 
 ## Repository Organization
 
