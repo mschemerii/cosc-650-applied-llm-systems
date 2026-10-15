@@ -1,10 +1,6 @@
 # COSC 650 Capstone — Meeting-to-Action Assistant
 
-## Project Overview
-
-The capstone project is a **Meeting-to-Action Assistant** that takes a meeting transcript and converts it into a structured operational brief. The goal is to build one small, measurable system that combines techniques from earlier COSC 650 assignments into a realistic end-to-end workflow.
-
-The system will identify and organize the parts of a meeting that are most useful after the call is over:
+The **Meeting-to-Action Assistant** converts an existing meeting transcript into a structured operational brief containing:
 
 - executive summary
 - decisions made
@@ -13,119 +9,82 @@ The system will identify and organize the parts of a meeting that are most usefu
 - blockers
 - follow-up questions
 
-The project is intentionally focused. It is not intended to become a general-purpose meeting platform, autonomous agent, transcription service, or enterprise workflow system. The capstone will concentrate on the quality of extracting operational information from already available transcript text.
+The goal is not to build a meeting platform. The capstone is one small, measurable LLM system that integrates techniques from earlier COSC 650 work and tests whether each added component actually improves the result.
 
 ## Problem
 
-Meeting transcripts are usually much longer than the information someone needs to act on. Decisions may be stated indirectly, action items may be spread across multiple speakers, owners may be implied rather than named in the same sentence, and suggestions can easily be mistaken for confirmed decisions.
+Meeting transcripts contain far more text than someone needs after the call. A useful brief has to distinguish confirmed decisions from suggestions, connect action items to the correct owner, identify real blockers, preserve unresolved questions, and summarize the meeting without inventing commitments.
 
-The project will test whether a small retrieval-and-reasoning pipeline can turn that noisy transcript into a reliable operational brief while preserving enough evidence to evaluate where the system succeeds or fails.
+The hardest planned failure case is intentionally included in the evaluation set:
 
-A central failure case will be distinguishing a **confirmed decision** from a suggestion, possibility, or discussion point.
+> A suggestion or discussion point is incorrectly reported as a confirmed decision.
 
-## Project Goal
-
-The goal is to determine the smallest architecture that produces useful and defensible meeting briefs.
-
-The system will reuse proven components from earlier course work instead of rebuilding every capability from scratch. Deterministic code and local models will be used where they are sufficient. Gemini will be reserved for tasks where stronger language reasoning provides a measurable advantage.
-
-The final model and pipeline choices will be based on evaluation results rather than assumptions about which model should perform best.
-
-## Planned Pipeline
+## Architecture
 
 ```text
-Meeting transcript
-       |
-       v
-Transcript preparation / chunking
-       |
-       v
-Semantic retrieval
-       |
-       v
-Cross-encoder reranking
-       |
-       v
-Relevant transcript context and optional examples
-       |
-       v
-Gemini structured extraction and synthesis
-       |
-       v
-Deterministic schema validation
-       |
-       v
-Structured operational brief
-       |
-       v
-Evaluation and failure analysis
+existing meeting transcript
+          |
+          v
+MiniLM + FAISS retrieval
+          |
+          v
+cross-encoder reranking
+          |
+          +---------------------+
+          |                     |
+          v                     v
+retrieved rules         optional few-shot examples
+          |                     |
+          +----------+----------+
+                     |
+                     v
+          Gemini structured extraction
+                     |
+                     v
+          deterministic validation
+                     |
+                     v
+          structured operational brief
+                     |
+                     v
+       metrics + judge + failure analysis
 ```
 
-## Techniques Integrated
+Gemini is used for the reasoning-heavy part of the system: ambiguous transcript interpretation, owner resolution, synthesis, and structured brief generation. Retrieval, reranking, validation, scoring, logging, and the targeted failure mitigation run locally or deterministically.
 
-The capstone will integrate techniques already explored in the course.
+## Integration by Reuse
 
-### 1. Retrieval-Augmented Generation
+The capstone reuses prior course components instead of rebuilding them.
 
-Local sentence-transformer embeddings and FAISS retrieval will select transcript passages or labeled examples relevant to decisions, action items, blockers, owners, and follow-up questions.
+| Technique | Reused from | Capstone use |
+| --- | --- | --- |
+| Structured prompting/output | [Week 3](../week-03/) | fixed JSON-oriented operational brief and versioned prompt discipline |
+| Deterministic schema validation | [Week 4](../week-04/) | required fields, types, evidence fields, and structured failure handling |
+| RAG with MiniLM + FAISS | [Week 5](../week-05/) | semantic retrieval of task-specific operational guidance |
+| Cross-encoder reranking | [Week 6](../week-06/) | rerank retrieved rules/examples before generation |
+| Dynamic few-shot retrieval | [Week 7](../week-07/) | select semantically similar examples and measure whether they help or regress |
 
-The retrieval implementation will build on the Week 5 RAG work.
-
-### 2. Reranking
-
-A local cross-encoder reranker will reorder retrieved candidates before they are supplied to the generation step.
-
-This component will build on the Week 6 retrieval and reranking work.
-
-### 3. Structured Prompting and Output
-
-Gemini will be prompted to return a fixed structured representation of the meeting brief rather than unconstrained prose.
-
-Expected fields will include:
-
-```text
-executive_summary
-decisions[]
-action_items[]
-    description
-    owner
-blockers[]
-follow_up_questions[]
-```
-
-The structured prompting approach will build on the Week 3 prompt-engineering work.
-
-### 4. Deterministic Validation
-
-Python validation will verify required fields, data types, and output structure. Invalid model output will be recorded as a measurable failure rather than silently accepted.
-
-This approach will reuse the schema and validation principles from Week 4.
-
-### 5. Dynamic Few-Shot Prompting
-
-The system will experimentally retrieve labeled examples that are semantically similar to the current transcript content and provide them as demonstrations to Gemini.
-
-Dynamic few-shot prompting will be treated as an experimental component, not an assumed improvement. Week 7 results showed that retrieved examples can sometimes introduce label bias, so the capstone will measure whether they help or hurt this task.
+This exceeds the rubric requirement of three integrated prior techniques while keeping the system within one narrow workflow.
 
 ## Models
 
 ### Gemini
 
-Gemini will be the primary model for reasoning-heavy extraction and synthesis tasks, including:
+Gemini handles:
 
-- determining whether a statement represents a confirmed decision
-- identifying action items expressed indirectly
-- resolving owners across multiple speakers
-- interpreting blockers and unresolved questions
-- combining information from multiple transcript passages
-- generating the executive summary
-- producing the final structured meeting brief
+- confirmed-decision interpretation
+- indirect action-item extraction
+- owner/coreference reasoning
+- blockers and unresolved questions
+- executive summarization
+- structured brief generation
+- the separate LLM-as-judge pass
 
-### Small Local Model
+The configured model name is an environment variable so a model change does not require rewriting the pipeline.
 
-A small local instruct model, initially **Qwen3.5-0.8B** or a similarly sized model, will be evaluated against Gemini.
+### Qwen3.5-0.8B local comparison
 
-The local model will first be tested on narrower tasks such as classifying transcript spans as:
+A small local model is evaluated only on the narrow classification problem:
 
 - `decision`
 - `action_item`
@@ -133,120 +92,138 @@ The local model will first be tested on narrower tasks such as classifying trans
 - `follow_up_question`
 - `context`
 
-It may also be tested on complete brief generation to establish where performance begins to break down.
+The project does not assume that the local model belongs in the final architecture. Accuracy and latency determine whether it is good enough for a limited role.
 
-The purpose of this comparison is not to force the local model into the final architecture. The goal is to determine whether it is good enough to replace Gemini for any narrow portion of the workflow.
+### Retrieval models
 
-### Retrieval Models
+- `sentence-transformers/all-MiniLM-L6-v2`
+- FAISS inner-product search over normalized embeddings
+- `cross-encoder/ms-marco-MiniLM-L-6-v2`
 
-Generative models will not be used for basic retrieval when deterministic local models are sufficient.
-
-The project will reuse:
-
-- a sentence-transformer embedding model such as `all-MiniLM-L6-v2`
-- FAISS for similarity search
-- a local cross-encoder for reranking
+Generative models are not used for basic retrieval when local deterministic models are sufficient.
 
 ## Evaluation
 
-A held-out evaluation set of approximately **10–20 meeting transcript examples** will be created and kept separate from examples used for prompt development or few-shot retrieval.
+The repository contains **12 held-out meeting cases** in [`data/eval_cases.json`](data/eval_cases.json). These cases are not used as dynamic demonstrations.
 
-The evaluation will measure:
+The same cases are evaluated under three ablations:
 
-- decision precision
-- decision recall
-- action-item precision
-- action-item recall
+1. **A — transcript only**
+2. **B — transcript + retrieved/reranked operational context**
+3. **C — transcript + retrieved/reranked context + dynamic few-shot examples**
+
+Concrete metrics include:
+
+- decision precision, recall, and F1
+- action-item precision, recall, and F1
 - owner accuracy
+- blocker F1
+- follow-up-question F1
 - structured-output validity rate
+- transcript-evidence support rate
 - latency
-- Gemini API cost
-- local inference cost
-- model-based correctness and grounding scores
 
-Where practical, deterministic metrics will be preferred over model judgment.
+### LLM-as-judge
 
-## Ablation Study
+Every held-out case is also judged on three named 1–5 dimensions:
 
-The project will compare at least these three configurations:
+- **correctness**
+- **grounding**
+- **operational usefulness**
 
-1. **Transcript only**
-2. **Transcript + retrieved context**
-3. **Transcript + retrieved context + retrieved few-shot examples**
+The notebook compares judge averages across A/B/C rather than judging only the chosen configuration.
 
-This will show whether retrieval and dynamic examples materially improve the final result rather than simply increasing system complexity.
+## Required Failure Mode
 
-Additional comparisons may include Gemini versus the local model, but only if they can be performed without expanding the project beyond the capstone scope.
+The notebook automatically traces at least one failure to a component using the ablation evidence.
 
-## Failure Analysis
+It first looks for a case where configuration C loses decision F1 relative to B, which would implicate the dynamic few-shot context. If that does not occur, it checks B versus A for a retrieval-context regression. If neither retrieval stage causes a regression, the lowest-scoring case is attributed to the generation/extraction stage instead of claiming a retrieval failure without evidence.
 
-At least one observed failure will be traced back to the component most likely responsible for it.
+The trace prints:
 
-The primary expected failure case is:
-
-> A suggestion or discussion point is incorrectly reported as a confirmed decision.
-
-The failure will be investigated using evidence such as:
-
-- retrieved passages
+- transcript
+- gold reference
+- A/B/C outputs and per-case metrics
+- retrieved operational rules
+- retrieved few-shot examples
 - reranker scores
-- selected few-shot examples
-- prompt configuration
-- model output
-- ablation results
 
-The objective is not merely to report that the model was wrong, but to identify which part of the pipeline contributed to the error.
+### Mitigation
 
-## Exact Project Scope
+A narrow deterministic guardrail addresses suggestion-as-decision errors. A proposed decision is filtered when its supporting evidence contains suggestion/hedging language without a commitment cue. The notebook measures the mitigation separately so any precision improvement can be checked against recall loss.
 
-The capstone will include:
+## Project Artifacts
 
-- input from an existing text meeting transcript
-- transcript chunking or passage preparation
+- [`week8_meeting_to_action_capstone.ipynb`](week8_meeting_to_action_capstone.ipynb) — integrated capstone notebook
+- [`capstone_core.py`](capstone_core.py) — reusable pipeline, scoring, judge, failure trace, and local-model comparison
+- [`data/eval_cases.json`](data/eval_cases.json) — 12 held-out meeting cases with predeclared gold labels
+- [`research-note.md`](research-note.md) — research question, hypotheses, evaluation design, failure mode, and final-result location
+
+The Week 8 dependency threat model is documented in [`../week-08/README.md`](../week-08/README.md).
+
+## Running the Capstone
+
+Run from the `project/` directory.
+
+Install dependencies if needed:
+
+```bash
+pip install sentence-transformers faiss-cpu openai pandas numpy
+```
+
+Set `GEMINI_API_KEY`, then run `week8_meeting_to_action_capstone.ipynb` from top to bottom.
+
+For the optional local comparison, start a llama.cpp OpenAI-compatible server and set:
+
+```bash
+export RUN_LOCAL_MODEL=1
+export LOCAL_LLM_BASE_URL=http://127.0.0.1:8080/v1
+export LOCAL_LLM_MODEL=qwen3.5-0.8b
+```
+
+After a complete execution, export the saved notebook:
+
+```bash
+jupyter nbconvert --to html week8_meeting_to_action_capstone.ipynb
+```
+
+The final notebook contains a submission guard. It reports **READY FOR SUBMISSION** only after the 12-case ablation, LLM-as-judge pass, and failure trace are present.
+
+## Exact Scope
+
+Included:
+
+- existing text transcripts
 - local semantic retrieval
 - local reranking
-- optional dynamic few-shot example selection
-- Gemini structured extraction and synthesis
-- deterministic output validation
-- a small local-model comparison
-- a held-out evaluation set
+- optional dynamic few-shot selection
+- Gemini structured extraction/synthesis
+- deterministic validation
+- small local-model comparison
+- 12-case held-out evaluation
 - quantitative metrics
-- at least one ablation study
-- at least one documented failure analysis
-- an executable notebook or small Python implementation
-- repository documentation and an executed submission artifact
+- LLM-as-judge evaluation
+- ablation study
+- required failure trace and mitigation
 
-## Explicitly Out of Scope
-
-To keep the project small enough to finish and evaluate properly, the following are **not** part of the capstone unless a course requirement later makes them necessary:
+Explicitly out of scope:
 
 - audio transcription or speech-to-text
 - live meeting capture
-- Zoom or Microsoft Teams integration
+- Teams/Zoom integration
 - calendar integration
-- email sending
-- automatic task creation
+- email sending or task creation
 - autonomous multi-agent workflows
-- vector databases or hosted retrieval infrastructure
-- fine-tuning a model
-- training a custom embedding model
-- production authentication or user accounts
-- graphical web application development
+- fine-tuning
+- custom embedding training
+- production authentication
+- web application development
 - cloud deployment
-- long-term conversational memory
-- automatic execution of extracted action items
+- long-term memory
+- automatic execution of extracted actions
 
-The final system stops after producing and evaluating the structured operational brief.
+The system stops after producing and evaluating the operational brief.
 
-## Success Criteria
+## Submission Status
 
-The project will be considered successful if it demonstrates that:
-
-1. a transcript can be converted into the required structured operational brief;
-2. the output can be evaluated with repeatable metrics;
-3. retrieval, reranking, and prompting choices can be compared experimentally;
-4. at least one failure can be traced to a specific component using evidence;
-5. the local model can be fairly compared with Gemini on an appropriate subset of the task; and
-6. the final architecture uses the simplest component that performs well enough for each part of the workflow.
-
-The capstone prioritizes **integration, measurement, and evidence** over adding features. A small system that works consistently and can explain its failures is the intended final result.
+The implementation and evaluation harness are complete. Final measured Gemini/judge results require an actual execution with `GEMINI_API_KEY`; the notebook deliberately refuses to substitute fabricated results when the API is unavailable. The executed `.ipynb`, HTML export, and measured-result update to the research note are the final submission artifacts.
