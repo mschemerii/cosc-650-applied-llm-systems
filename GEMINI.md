@@ -23,3 +23,23 @@ The primary measured run contains 25 balanced examples and always includes all f
 `GEMINI_API_KEY` is read from Google Colab Secrets. Responses are cached only in memory during the session. No `.env`, Google Drive mount, or JSON cache file is used.
 
 The final results and decision memo are generated from the current executed metrics. The research note is included in the notebook. No fine-tuning is performed; fine-tuning is evaluated only as a future engineering decision.
+
+## Week 8 Capstone
+
+The Week 8 capstone is the **Meeting-to-Action Assistant** in `project/`. AI assistance was used to scaffold and debug the notebook, evaluation harness, retrieval/reranking integration, deterministic validation, caching layer, failure-trace logic, and repository documentation. The measured results, interpretation of those results, and final architecture decision must be based on the executed notebook outputs.
+
+The integrated system reuses prior course techniques rather than rebuilding them:
+
+- Week 3 structured prompting/output
+- Week 4 schema validation and structured failures
+- Week 5 MiniLM + FAISS retrieval
+- Week 6 cross-encoder reranking
+- Week 7 dynamic few-shot retrieval and held-out evaluation discipline
+
+Gemini Flash is used for structured meeting-brief synthesis. Gemini Flash is also the default LLM-as-judge model on the 12 held-out cases, scoring correctness, grounding, and operational usefulness. The notebook caps a completely uncached evaluation at 36 synthesis calls and 36 judge calls.
+
+Responses are persisted to `project/data/response_cache.json` so a completed evaluation can be rerun without repeatedly consuming the Gemini free-tier quota. The cache should be committed after the measured run. Local MiniLM retrieval, cross-encoder reranking, validation, matching, metrics, and the targeted mitigation run without GPU acceleration.
+
+The optional Qwen3.5-0.8B comparison is limited to narrow span classification and is not required for the integrated capstone system to function. It should only be reported if it is actually executed and measured.
+
+No model-generated metric or conclusion should be reported as a project result until the notebook has been executed. The final research note and README results section should be updated from the measured outputs rather than from assumed performance.
