@@ -21,7 +21,7 @@ The implementation is intentionally small and measurable. It reuses techniques f
 
 ### Submission notebook
 
-[`week8_meeting_to_action_capstone.ipynb`](week8_meeting_to_action_capstone.ipynb) is the **self-contained capstone notebook**. The held-out evaluation cases, retrieval corpus, few-shot examples, prompts, validation, metrics, Gemini calls, judge pass, failure tracing, mitigation, and cache export are all defined inside the notebook. It does not require a project-local Python module or external dataset file.
+[`week8_meeting_to_action_capstone.ipynb`](week8_meeting_to_action_capstone.ipynb) is the **self-contained capstone notebook** and the primary submission artifact. The held-out evaluation cases, retrieval corpus, few-shot examples, prompts, validation, metrics, Gemini calls, judge pass, failure tracing, mitigation, and cache export are all defined inside the notebook. It does not require a project-local Python module or external dataset file.
 
 The notebook evaluates three configurations over **10 held-out cases**:
 
@@ -34,6 +34,10 @@ Concrete metrics include decision precision/recall/F1, action-item precision/rec
 The required failure mode is a suggestion/discussion point being incorrectly promoted to a confirmed decision. The notebook uses the A/B/C comparison to trace the error to dynamic few-shot context, retrieved context, or the generation stage, then measures a narrow deterministic mitigation.
 
 The companion [research note](research-note.md) records the research question, evaluation design, failure hypothesis, and final measured conclusions after execution.
+
+### Self-contained caching
+
+To stay within Gemini free-tier limits without creating a required external cache file, the notebook keeps responses in memory and prints a `CACHE_EXPORT` JSON string after execution. That string can be pasted into the notebook's `PRELOADED_CACHE_JSON` variable before a later clean rerun. The committed notebook therefore remains a single self-contained implementation artifact.
 
 ### Scope boundaries
 
