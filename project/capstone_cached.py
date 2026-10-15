@@ -4,6 +4,9 @@ import pandas as pd
 import capstone_core as core
 from capstone_core import *
 
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+GEMINI_JUDGE_MODEL = os.getenv("GEMINI_JUDGE_MODEL", GEMINI_MODEL)
+
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 CACHE_PATH = BASE_DIR / "data" / "response_cache.json"
 MAX_SYNTHESIS_LIVE_CALLS = int(os.getenv("CAPSTONE_MAX_SYNTHESIS_CALLS", "36"))
@@ -51,12 +54,11 @@ def cache_summary():
 
 def gemini_extract(transcript, config="A"):
     global _live_synthesis_calls
-    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+    model = GEMINI_MODEL
     cache_key = _key({"kind": "synthesis", "model": model, "config": config, "transcript": transcript})
     if cache_key in _CACHE["synthesis"]:
         cached = dict(_CACHE["synthesis"][cache_key])
         cached["cache_hit"] = True
-        # Rebuild retrieval logs locally because they are used for failure tracing.
         cached["retrieval"] = {"rules": [], "examples": []}
         if config in ("B", "C"):
             cached["retrieval"]["rules"] = core.retrieve_rules(transcript, 4)
@@ -97,7 +99,7 @@ def run_ablation(configs=("A", "B", "C")):
 
 def gemini_judge(case, candidate):
     global _live_judge_calls
-    model = os.getenv("GEMINI_JUDGE_MODEL", os.getenv("GEMINI_MODEL", "gemini-3.5-flash"))
+    model = GEMINI_JUDGE_MODEL
     payload = {"transcript": case["transcript"], "gold_reference": case["gold"], "candidate": candidate}
     cache_key = _key({"kind": "judge", "model": model, "payload": payload})
     if cache_key in _CACHE["judge"]:
