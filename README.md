@@ -4,18 +4,17 @@ This repository contains my coursework, experiments, and capstone project for CO
 
 ## Capstone Project
 
-### [Meeting-to-Action Assistant](project/)
+### [Meeting-to-Action Assistant](week-08/)
 
 The capstone integrates earlier course techniques into one measured system that converts an existing meeting transcript into a structured operational brief with an executive summary, decisions, action items and owners, blockers, and follow-up questions.
 
-The system combines structured prompting, deterministic validation, MiniLM/FAISS retrieval, cross-encoder reranking, dynamic few-shot prompting, held-out evaluation, LLM-as-judge scoring, and component-level failure analysis. A small local Qwen model is evaluated separately for narrow classification rather than assumed to be suitable for the full reasoning task.
+The system combines structured prompting, deterministic validation, MiniLM/FAISS retrieval, cross-encoder reranking, dynamic few-shot prompting, held-out evaluation, LLM-as-judge scoring, and component-level failure analysis.
 
 Key capstone artifacts:
 
-- [Project README and architecture](project/README.md)
-- [Integrated capstone notebook](project/week8_meeting_to_action_capstone.ipynb)
-- [Research note](project/research-note.md)
-- [12-case held-out evaluation set](project/data/eval_cases.json)
+- [Week 8 README and architecture](week-08/README.md)
+- [Self-contained capstone notebook](week-08/week8_meeting_to_action_capstone.ipynb)
+- [Research note](week-08/research-note.md)
 
 ## Course Context
 
@@ -34,12 +33,11 @@ My goal is to understand what happens beneath LLM frameworks so I can design sys
 | [Week 5](week-05/) | RAG and retrieval evaluation | Built an eight-document RAG pipeline with local MiniLM/MPNet embeddings, FAISS retrieval, ten labeled queries, chunk-level precision/recall, and grounded Gemini generation. A separate discussion compares three chunking strategies. |
 | [Week 6](week-06/) | Query transformation and re-ranking | Extended the Week 5 retriever with Gemini Flash-Lite multi-query transformation, reciprocal-rank fusion, transformation-only evaluation, and a local cross-encoder reranker. The executed run showed transformation-only MRR 0.850 versus baseline 0.900, while reranking improved final MRR to 1.000. |
 | [Week 7](week-07/) | Adaptation decision and production dataset | Built a deterministic 250-example training set and 50-example held-out meeting-transcript classification set, then compared Gemini Flash-Lite zero-shot classification with local MiniLM retrieval-selected dynamic few-shot adaptation. The executed run scored **100.0% zero-shot vs. 96.0% dynamic few-shot**; `action_item` was the clearest underperforming slice at **100.0% vs. 80.0%**, supporting the simpler prompt-based approach. |
-| [Week 8](week-08/) | Integrated LLM system | Built the Meeting-to-Action Assistant capstone by reusing Weeks 3–7 components, with a 12-case held-out evaluation, A/B/C ablation, LLM-as-judge pass, required failure trace, and targeted mitigation. Week 8 also includes the external-dependency threat model. |
+| [Week 8](week-08/) | Integrated LLM system | Built the self-contained Meeting-to-Action Assistant capstone by reusing Weeks 3–7 components, with a 10-case held-out evaluation, A/B/C ablation, LLM-as-judge pass, required failure trace, and targeted mitigation. Week 8 also includes the external-dependency threat model. |
 
 ## Repository Organization
 
 - `week-01/` through `week-08/` — weekly assignments, experiments, discussions, and notebooks
-- `project/` — final capstone implementation, evaluation data, research note, and architecture documentation
 - `GEMINI.md` — project context and conventions for AI coding assistants
 
 ## Technologies
