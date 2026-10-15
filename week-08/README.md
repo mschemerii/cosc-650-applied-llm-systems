@@ -11,3 +11,7 @@ I would detect those failures in a few ways. First, I would keep a small smoke t
 My mitigation would be to keep the Gemini model name configurable, validate every structured response, cache completed evaluation calls, and add retry/backoff for temporary rate-limit failures. I would also keep synthesis and judging isolated enough that I could switch to another supported Gemini model without rewriting the retrieval pipeline.
 
 That mitigation adds some code and can add latency during retries, but I think it is worth the cost. I would not build a full multi-provider abstraction for this capstone because that would add complexity without improving the assignment. The smaller safeguards address the failures that are most likely to affect a free-tier course project.
+
+## Capstone
+
+The Week 8 integrated-system assignment is the [Meeting-to-Action Assistant](../project/). The implementation notebook, 12-case held-out evaluation set, research note, architecture, ablation design, judge pass, failure trace, and mitigation are maintained in the `project/` directory.
