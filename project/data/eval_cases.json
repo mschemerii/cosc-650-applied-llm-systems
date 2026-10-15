@@ -1,0 +1,125 @@
+[
+  {
+    "id": "E01",
+    "transcript": "Brittany: We need the renewal demo ready by Friday.\nMichael: I can finish the validation worksheet Thursday.\nBrittany: Good. Michael owns the worksheet, and we'll use the current pricing template for the demo.\nMichael: The OpenAir export is still missing two customer IDs.\nBrittany: Ask Finance whether those IDs can be corrected before Thursday.",
+    "gold": {
+      "decisions": ["Use the current pricing template for the renewal demo."],
+      "actions": [
+        {"description": "Finish the validation worksheet by Thursday.", "owner": "Michael"},
+        {"description": "Ask Finance whether the missing customer IDs can be corrected before Thursday.", "owner": "Michael"}
+      ],
+      "blockers": ["The OpenAir export is missing two customer IDs."],
+      "follow_up_questions": ["Can Finance correct the missing customer IDs before Thursday?"]
+    }
+  },
+  {
+    "id": "E02",
+    "transcript": "Alex: Maybe we should move the launch to Monday.\nPriya: I would rather keep Friday unless QA finds something serious.\nAlex: Agreed. No schedule change right now.\nPriya: I'll send the final QA result by 3 PM.",
+    "gold": {
+      "decisions": ["Keep the Friday launch schedule unless QA finds a serious issue."],
+      "actions": [{"description": "Send the final QA result by 3 PM.", "owner": "Priya"}],
+      "blockers": [],
+      "follow_up_questions": []
+    }
+  },
+  {
+    "id": "E03",
+    "transcript": "Sam: The customer asked whether SSO can be included in phase one.\nJordan: We don't know the engineering effort yet.\nSam: Could we promise it conditionally?\nJordan: No. Let's get an estimate first. Jordan will ask Engineering for the effort by Wednesday.",
+    "gold": {
+      "decisions": ["Do not promise SSO for phase one until an engineering estimate is available."],
+      "actions": [{"description": "Ask Engineering for the SSO effort estimate by Wednesday.", "owner": "Jordan"}],
+      "blockers": ["The engineering effort for SSO is unknown."],
+      "follow_up_questions": ["What is the engineering effort for adding SSO in phase one?"]
+    }
+  },
+  {
+    "id": "E04",
+    "transcript": "Nina: I think a weekly dashboard could help.\nOmar: Possibly. Let's look at examples next week.\nNina: There is no decision on dashboard cadence today.\nOmar: I'll collect three dashboard examples before our next meeting.",
+    "gold": {
+      "decisions": [],
+      "actions": [{"description": "Collect three dashboard examples before the next meeting.", "owner": "Omar"}],
+      "blockers": [],
+      "follow_up_questions": []
+    }
+  },
+  {
+    "id": "E05",
+    "transcript": "Lee: The import failed because three rows have invalid dates.\nCasey: Can we fix them manually?\nLee: Yes. I'll correct the dates and rerun the import today.\nCasey: Approved. Keep the current import mapping; don't redesign it for this release.",
+    "gold": {
+      "decisions": ["Keep the current import mapping for this release."],
+      "actions": [{"description": "Correct the invalid dates and rerun the import today.", "owner": "Lee"}],
+      "blockers": ["Three rows have invalid dates and caused the import to fail."],
+      "follow_up_questions": []
+    }
+  },
+  {
+    "id": "E06",
+    "transcript": "Maya: We have two vendors that could supply the API data.\nChris: Vendor B is cheaper, but legal hasn't reviewed its terms.\nMaya: Let's not choose a vendor yet.\nChris: I'll send both agreements to Legal.\nMaya: Which agreement can Legal clear this week?",
+    "gold": {
+      "decisions": ["Do not choose an API data vendor yet."],
+      "actions": [{"description": "Send both vendor agreements to Legal.", "owner": "Chris"}],
+      "blockers": ["Legal has not reviewed Vendor B's terms."],
+      "follow_up_questions": ["Which vendor agreement can Legal clear this week?"]
+    }
+  },
+  {
+    "id": "E07",
+    "transcript": "Dana: The pilot users liked the shorter form.\nEli: Should we remove the optional notes field too?\nDana: Not yet. We did agree to keep the shorter form for the pilot.\nEli: I'll measure completion time for another week.",
+    "gold": {
+      "decisions": ["Keep the shorter form for the pilot."],
+      "actions": [{"description": "Measure form completion time for another week.", "owner": "Eli"}],
+      "blockers": [],
+      "follow_up_questions": ["Should the optional notes field be removed?"]
+    }
+  },
+  {
+    "id": "E08",
+    "transcript": "Rosa: The report numbers from Analytics and Search Console don't match.\nIan: The date ranges are different.\nRosa: Use September 1 through September 30 for both sources.\nIan: Got it. I'll rerun both reports with that date range and send the numbers tomorrow.",
+    "gold": {
+      "decisions": ["Use September 1 through September 30 as the date range for both sources."],
+      "actions": [{"description": "Rerun both reports with the September 1 through September 30 date range and send the numbers tomorrow.", "owner": "Ian"}],
+      "blockers": ["Analytics and Search Console report numbers do not match because the date ranges differ."],
+      "follow_up_questions": []
+    }
+  },
+  {
+    "id": "E09",
+    "transcript": "Taylor: We could automate the email after generation.\nMorgan: I don't want automatic sending in version one.\nTaylor: Okay, generated drafts will require human review.\nMorgan: Taylor, document that approval gate in the design.",
+    "gold": {
+      "decisions": ["Version one will not automatically send generated email; generated drafts require human review."],
+      "actions": [{"description": "Document the human approval gate in the design.", "owner": "Taylor"}],
+      "blockers": [],
+      "follow_up_questions": []
+    }
+  },
+  {
+    "id": "E10",
+    "transcript": "Avery: The customer list has duplicate organizations.\nQuinn: That explains the mismatched renewal totals.\nAvery: We need a matching key before proposal generation.\nQuinn: I'll test domain plus customer ID as the matching key.\nAvery: Is customer ID populated for every record?",
+    "gold": {
+      "decisions": ["A matching key is required before proposal generation."],
+      "actions": [{"description": "Test domain plus customer ID as the matching key.", "owner": "Quinn"}],
+      "blockers": ["Duplicate organizations are causing mismatched renewal totals."],
+      "follow_up_questions": ["Is customer ID populated for every record?"]
+    }
+  },
+  {
+    "id": "E11",
+    "transcript": "Jamie: Maybe we can replace the local model with the cloud model everywhere.\nRobin: That would increase cost and isn't necessary yet.\nJamie: Fair. We'll keep the local classifier experiment and use Gemini only for the full brief.\nRobin: I'll record latency for both models on the evaluation set.",
+    "gold": {
+      "decisions": ["Keep the local classifier experiment and use Gemini for the full meeting brief."],
+      "actions": [{"description": "Record latency for both models on the evaluation set.", "owner": "Robin"}],
+      "blockers": [],
+      "follow_up_questions": []
+    }
+  },
+  {
+    "id": "E12",
+    "transcript": "Pat: The prototype works, but the owner field is wrong on two cases.\nDrew: One case says 'I'll handle it' three turns after the task was mentioned.\nPat: We should test cross-speaker references explicitly.\nDrew: Agreed. I'll add two owner-resolution cases to the eval set.\nPat: Do we need a separate coreference model?",
+    "gold": {
+      "decisions": ["Add explicit cross-speaker owner-reference testing to the evaluation."],
+      "actions": [{"description": "Add two owner-resolution cases to the evaluation set.", "owner": "Drew"}],
+      "blockers": ["The prototype assigns the wrong owner on two cases."],
+      "follow_up_questions": ["Is a separate coreference model needed?"]
+    }
+  }
+]
