@@ -98,17 +98,17 @@ Qwen3.5-0.8B is not forced into the final architecture. It is evaluated on 20 sh
 
 The comparison records classification accuracy and local inference latency. The final model choice is based on measured performance rather than an assumption that either local or cloud inference is inherently better.
 
-## Results status
+## Measured results
 
-The implementation and evaluation harness are complete, but measured Gemini and judge results must come from an actual notebook execution with `GEMINI_API_KEY`. The notebook intentionally does **not** substitute fabricated or gold-derived outputs when the API is unavailable.
+**Pending final execution.** The code and evaluation harness are complete, but the final numbers must come from a real run of `week8_meeting_to_action_capstone.ipynb` with `GEMINI_API_KEY` available. No synthetic, gold-derived, or fabricated model outputs are used when the API is unavailable.
 
-Before submission, the executed notebook should contain:
+After the final run, this section should be replaced with the measured:
 
-- A/B/C metric tables for all 12 cases
-- the three-dimension judge pass
-- the selected failure trace
-- the mitigation comparison
-- the final system-selection conclusion
-- the optional local-model result if the llama.cpp comparison is run
+- A/B/C deterministic metric table
+- correctness, grounding, and operational-usefulness judge averages
+- selected failure case and responsible component
+- pre/post mitigation decision F1
+- local Qwen accuracy/latency if that optional comparison is run
+- final architecture choice and the evidence supporting it
 
-The measured results from that execution should be summarized here before the final merge.
+The notebook has a submission guard that reports `READY FOR SUBMISSION` only when the required evaluation and failure-analysis artifacts exist.
