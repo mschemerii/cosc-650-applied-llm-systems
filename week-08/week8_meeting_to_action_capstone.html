@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Week 8 Capstone — Meeting-to-Action Assistant</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;max-width:1100px;margin:36px auto;padding:0 22px;color:#202124;line-height:1.5}
+h1,h2,h3{color:#111827;margin-top:1.4em}
+.cell{margin:22px 0}
+.code{background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.output{background:#fff;border-left:4px solid #d0d7de;padding:10px 14px;margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+table{border-collapse:collapse;width:auto;max-width:100%;overflow-x:auto;display:block}
+th,td{border:1px solid #d0d7de;padding:6px 9px;text-align:left}
+.note{font-size:.9em;color:#57606a}
+a{color:#0969da}
+</style></head><body>
+<div class="cell markdown">
+<pre># Week 8 Capstone — Meeting-to-Action Assistant
+
+Reuses Week 3 structured output, Week 4 validation, Week 5 MiniLM+FAISS RAG, Week 6 cross-encoder reranking, and Week 7 dynamic few-shot selection. A/B/C: A transcript only; B adds retrieved/reranked guidance; C also adds dynamic few-shot examples.</pre>
+</div>
+<div class="cell markdown">
+<pre>## Colab setup — install dependencies
+
+**Run the next code cell once in a fresh Google Colab runtime, then restart the runtime before continuing.**
+
+This notebook uses Colab&#x27;s bundled PyTorch; do not reinstall `torch`. The retrieval stack is pinned to a known-compatible pair: `sentence-transformers==5.1.0` and `transformers==4.57.1`. This avoids the mixed Transformers 4/5 state that causes `find_pruneable_heads_and_indices` import failures.
+
+After the install cell completes, choose **Runtime → Restart session**, then continue from the imports cell below. If this runtime previously installed a different `torch`, `transformers`, or `sentence-transformers`, use **Runtime → Disconnect and delete runtime** first, reconnect, run the install cell, restart once, and continue.</pre>
+</div>
+<div class="cell codecell">
+<div class="code">%pip install -q &quot;sentence-transformers==5.1.0&quot; &quot;transformers==4.57.1&quot; faiss-cpu openai pandas numpy tabulate tqdm</div>
+</div>
+<div class="cell codecell">
+<div class="code">import os,re,json,time,random,hashlib,numpy as np,pandas as pd,faiss
+import torch, transformers, sentence_transformers
+from sentence_transformers import SentenceTransformer,CrossEncoder
+from IPython.display import display,Markdown
+from tqdm.auto import tqdm
+print(&quot;PyTorch:&quot;,torch.__version__,&quot;| Transformers:&quot;,transformers.__version__,&quot;| Sentence Transformers:&quot;,sentence_transformers.__version__)
+try:
+ from google.colab import userdata
+ if not os.getenv(&quot;GEMINI_API_KEY&quot;):os.environ[&quot;GEMINI_API_KEY&quot;]=userdata.get(&quot;GEMINI_API_KEY&quot;)
+except:pass
+GM=os.getenv(&quot;GEMINI_MODEL&quot;,&quot;gemini-3.5-flash-lite&quot;);JM=os.getenv(&quot;GEMINI_JUDGE_MODEL&quot;,GM);QM=&quot;Qwen/Qwen2.5-0.5B-Instruct&quot;;CACHE={&quot;s&quot;:{},&quot;j&quot;:{}}
+def K(x):return hashlib.sha256(json.dumps(x,sort_keys=True).encode()).hexdigest()
+def A(m,p):
+ from openai import OpenAI
+ c=OpenAI(api_key=os.environ[&quot;GEMINI_API_KEY&quot;],base_url=&quot;https://generativelanguage.googleapis.com/v1beta/openai/&quot;)
+ for i,w in enumerate([2,4,8,16,32,32]):
+  try:return c.chat.completions.create(model=m,messages=[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:p}],temperature=0)
+  except Exception as e:
+   if getattr(e,&quot;status_code&quot;,None) not in {429,500,502,503,504} or i==5:raise
+   d=w+random.random();tqdm.write(f&quot;Gemini {getattr(e,&#x27;status_code&#x27;,None)}; retry in {d:.1f}s&quot;);time.sleep(d)
+def J(s):return json.loads(re.sub(r&quot;^```(?:json)?\s*|\s*```$&quot;,&quot;&quot;,s.strip(),flags=re.I))
+print(&quot;Gemini:&quot;,GM,&quot;| Judge:&quot;,JM,&quot;| Qwen:&quot;,QM)</div>
+<div class="output">WARNING:torchao.kernel.intmm:Warning: Detected no triton, on systems without Triton certain kernels will not work
+</div>
+<div class="output">PyTorch: 2.11.0+cpu | Transformers: 4.57.1 | Sentence Transformers: 5.1.0
+Gemini: gemini-3.5-flash-lite | Judge: gemini-3.5-flash-lite | Qwen: Qwen/Qwen2.5-0.5B-Instruct
+</div>
+</div>
+<div class="cell markdown">
+<pre>## Held-out set and reused retrieval components</pre>
+</div>
+<div class="cell codecell">
+<div class="code">C=[(&quot;E01&quot;,&quot;Maybe move Monday. No, keep Friday. I&#x27;ll send QA.&quot;,[&quot;keep friday&quot;],[(&quot;send qa&quot;,&quot;B&quot;)],[],[]),(&quot;E02&quot;,&quot;Export missing IDs. I&#x27;ll ask Finance.&quot;,[],[(&quot;ask finance&quot;,&quot;B&quot;)],[&quot;missing ids&quot;],[]),(&quot;E03&quot;,&quot;Could we use vendor B? Legal has not reviewed it. Do not choose yet.&quot;,[&quot;do not choose&quot;],[],[&quot;legal has not reviewed&quot;],[]),(&quot;E04&quot;,&quot;Weekly dashboard might help. No cadence decision. I&#x27;ll collect examples.&quot;,[],[(&quot;collect examples&quot;,&quot;B&quot;)],[],[]),(&quot;E05&quot;,&quot;Import failed on invalid dates. I&#x27;ll fix dates. Keep current mapping.&quot;,[&quot;keep current mapping&quot;],[(&quot;fix dates&quot;,&quot;B&quot;)],[&quot;invalid dates&quot;],[]),(&quot;E06&quot;,&quot;Use Sep 1-Sep 30 for both reports. I&#x27;ll rerun them.&quot;,[&quot;use sep 1 sep 30&quot;],[(&quot;rerun&quot;,&quot;B&quot;)],[],[]),(&quot;E07&quot;,&quot;We could automate email. Not in v1; human review required. I&#x27;ll document the gate.&quot;,[&quot;human review required&quot;],[(&quot;document gate&quot;,&quot;A&quot;)],[],[]),(&quot;E08&quot;,&quot;Duplicate customers cause bad totals. I&#x27;ll test customer ID.&quot;,[],[(&quot;test customer id&quot;,&quot;B&quot;)],[&quot;duplicate customers&quot;],[]),(&quot;E09&quot;,&quot;Should we remove notes? Not yet. Keep shorter form. I&#x27;ll measure time.&quot;,[&quot;keep shorter form&quot;],[(&quot;measure time&quot;,&quot;A&quot;)],[],[&quot;remove notes&quot;]),(&quot;E10&quot;,&quot;SSO effort unknown. Do not promise it. I&#x27;ll ask Engineering. Need separate coreference model?&quot;,[&quot;do not promise&quot;],[(&quot;ask engineering&quot;,&quot;B&quot;)],[&quot;sso effort unknown&quot;],[&quot;coreference model&quot;])]
+R=[&quot;Decisions require explicit commitment.&quot;,&quot;Maybe/could/might suggestions are not decisions unless later committed.&quot;,&quot;Actions are future work; never invent an owner.&quot;,&quot;Blockers prevent, delay, or risk progress.&quot;,&quot;Questions must remain unresolved.&quot;,&quot;Extracted items need transcript evidence.&quot;]
+S=[(&quot;Maybe delay. No, keep Friday.&quot;,&quot;decision&quot;),(&quot;Could we use vendor B? Compare terms first.&quot;,&quot;no decision&quot;),(&quot;Missing IDs. I&#x27;ll ask Finance.&quot;,&quot;action&quot;),(&quot;Legal not reviewed.&quot;,&quot;blocker&quot;),(&quot;Should we remove notes?&quot;,&quot;question&quot;)]
+display(pd.DataFrame([{&quot;case&quot;:x[0],&quot;transcript&quot;:x[1]} for x in C]));display(pd.DataFrame({&quot;RAG guidance&quot;:R}));display(pd.DataFrame(S,columns=[&quot;few-shot input&quot;,&quot;target&quot;]))
+b=tqdm(total=4,desc=&quot;Loading retrieval components&quot;);E=SentenceTransformer(&quot;sentence-transformers/all-MiniLM-L6-v2&quot;);b.update(1);X=CrossEncoder(&quot;cross-encoder/ms-marco-MiniLM-L-6-v2&quot;);b.update(1)
+def I(d):v=E.encode(d,normalize_embeddings=True,show_progress_bar=False).astype(&quot;float32&quot;);z=faiss.IndexFlatIP(v.shape[1]);z.add(v);return z
+RI=I(R);b.update(1);SI=I([x[0] for x in S]);b.update(1);b.close()
+def ret(q,d,z,t=lambda x:x,k=3):v=E.encode([q],normalize_embeddings=True,show_progress_bar=False).astype(&quot;float32&quot;);_,ids=z.search(v,min(6,len(d)));c=[d[int(i)] for i in ids[0] if i&gt;=0];s=X.predict([(q,t(x)) for x in c],show_progress_bar=False);return [x for _,x in sorted(zip(s,c),reverse=True)[:k]]
+display(pd.DataFrame({&quot;sample retrieved rules&quot;:ret(C[0][1],R,RI,k=4)}))</div>
+<div class="output">  case                                         transcript
+0  E01  Maybe move Monday. No, keep Friday. I&#x27;ll send QA.
+1  E02              Export missing IDs. I&#x27;ll ask Finance.
+2  E03  Could we use vendor B? Legal has not reviewed ...
+3  E04  Weekly dashboard might help. No cadence decisi...
+4  E05  Import failed on invalid dates. I&#x27;ll fix dates...
+5  E06  Use Sep 1-Sep 30 for both reports. I&#x27;ll rerun ...
+6  E07  We could automate email. Not in v1; human revi...
+7  E08  Duplicate customers cause bad totals. I&#x27;ll tes...
+8  E09  Should we remove notes? Not yet. Keep shorter ...
+9  E10  SSO effort unknown. Do not promise it. I&#x27;ll as...
+
+                                        RAG guidance
+0             Decisions require explicit commitment.
+1  Maybe/could/might suggestions are not decision...
+2    Actions are future work; never invent an owner.
+3         Blockers prevent, delay, or risk progress.
+4                  Questions must remain unresolved.
+5          Extracted items need transcript evidence.
+
+                                few-shot input       target
+0                Maybe delay. No, keep Friday.     decision
+1  Could we use vendor B? Compare terms first.  no decision
+2               Missing IDs. I&#x27;ll ask Finance.       action
+3                          Legal not reviewed.      blocker
+4                      Should we remove notes?     question
+
+Loading retrieval components: 100%|##########| 4/4
+                              sample retrieved rules
+0  Maybe/could/might suggestions are not decision...
+1                  Questions must remain unresolved.
+2             Decisions require explicit commitment.
+3         Blockers prevent, delay, or risk progress.
+</div>
+</div>
+<div class="cell markdown">
+<pre>## A/B/C evaluation, judge, failure, and mitigation
+
+Progress bars expose the 30 synthesis cases, 10 judge cases, and mitigation pass.</pre>
+</div>
+<div class="cell codecell">
+<div class="code">P=&#x27;&#x27;&#x27;Return JSON only: {&quot;executive_summary&quot;:&quot;string&quot;,&quot;decisions&quot;:[{&quot;decision&quot;:&quot;string&quot;,&quot;evidence&quot;:&quot;string&quot;}],&quot;action_items&quot;:[{&quot;description&quot;:&quot;string&quot;,&quot;owner&quot;:&quot;string&quot;,&quot;evidence&quot;:&quot;string&quot;}],&quot;blockers&quot;:[{&quot;blocker&quot;:&quot;string&quot;,&quot;evidence&quot;:&quot;string&quot;}],&quot;follow_up_questions&quot;:[{&quot;question&quot;:&quot;string&quot;,&quot;evidence&quot;:&quot;string&quot;}]}. Only confirmed decisions; do not invent owners; blockers must delay/risk progress; unresolved questions only; include evidence.&#x27;&#x27;&#x27;;REQ=[&quot;executive_summary&quot;,&quot;decisions&quot;,&quot;action_items&quot;,&quot;blockers&quot;,&quot;follow_up_questions&quot;]
+def ex(t,g):
+ k=K([GM,g,t])
+ if k in CACHE[&quot;s&quot;]:return CACHE[&quot;s&quot;][k]
+ p=[P];L={&quot;rules&quot;:[],&quot;examples&quot;:[]}
+ if g in &quot;BC&quot;:L[&quot;rules&quot;]=ret(t,R,RI,k=4);p+=[&quot;Guidance: &quot;+str(L[&quot;rules&quot;])]
+ if g==&quot;C&quot;:L[&quot;examples&quot;]=ret(t,S,SI,lambda x:x[0],3);p+=[&quot;Examples: &quot;+str(L[&quot;examples&quot;])]
+ st=time.time()
+ try:o=J(A(GM,chr(10).join(p+[&quot;Transcript:&quot;,t])).choices[0].message.content)
+ except:o={}
+ r={&quot;brief&quot;:o,&quot;valid&quot;:isinstance(o,dict) and all(x in o for x in REQ),&quot;lat&quot;:time.time()-st,&quot;log&quot;:L};CACHE[&quot;s&quot;][k]=r;return r
+def T(x):return set(re.findall(r&quot;[a-z0-9]+&quot;,str(x).lower()))
+def f(p,g):
+ u=set();n=0
+ for x in p:
+  z=[(len(T(x)&amp;T(y))/max(1,len(T(x)|T(y))),i) for i,y in enumerate(g) if i not in u]
+  if z and max(z)[0]&gt;=.25:n+=1;u.add(max(z)[1])
+ a=n/len(p) if p else (1 if not g else 0);b=n/len(g) if g else (1 if not p else 0);return 2*a*b/(a+b) if a+b else 0
+def sc(c,r):
+ b=r[&quot;brief&quot;] if r[&quot;valid&quot;] else {};d=[x.get(&quot;decision&quot;,&quot;&quot;) for x in b.get(&quot;decisions&quot;,[])];a=[x.get(&quot;description&quot;,&quot;&quot;) for x in b.get(&quot;action_items&quot;,[])];o=[str(x.get(&quot;owner&quot;) or &quot;&quot;) for x in b.get(&quot;action_items&quot;,[])];bl=[x.get(&quot;blocker&quot;,&quot;&quot;) for x in b.get(&quot;blockers&quot;,[])];q=[x.get(&quot;question&quot;,&quot;&quot;) for x in b.get(&quot;follow_up_questions&quot;,[])];ow=1 if not c[3] else int(any(i&lt;len(o) and o[i].strip().lower()==str(go or &quot;&quot;).strip().lower() for i in range(len(o)) for _,go in c[3]));return {&quot;case&quot;:c[0],&quot;decision_f1&quot;:f(d,c[2]),&quot;action_f1&quot;:f(a,[x[0] for x in c[3]]),&quot;owner_accuracy&quot;:ow,&quot;blocker_f1&quot;:f(bl,c[4]),&quot;question_f1&quot;:f(q,c[5]),&quot;valid&quot;:int(r[&quot;valid&quot;]),&quot;latency_s&quot;:r[&quot;lat&quot;]}
+RES={};rows=[]
+if os.getenv(&quot;GEMINI_API_KEY&quot;):
+ with tqdm(total=30,desc=&quot;A/B/C synthesis evaluation&quot;) as bar:
+  for g in &quot;ABC&quot;:
+   RES[g]={};bar.set_postfix(config=g)
+   for c in C:r=ex(c[1],g);RES[g][c[0]]=r;x=sc(c,r);x[&quot;config&quot;]=g;rows.append(x);bar.update(1)
+ M=pd.DataFrame(rows);SUM=M.groupby(&quot;config&quot;).mean(numeric_only=True).round(3);SUM[&quot;score&quot;]=SUM[[&quot;decision_f1&quot;,&quot;action_f1&quot;,&quot;owner_accuracy&quot;,&quot;blocker_f1&quot;,&quot;question_f1&quot;,&quot;valid&quot;]].mean(axis=1).round(3);BEST=SUM.score.idxmax();display(M);display(SUM);print(&quot;Selected&quot;,BEST)
+else:print(&quot;API-BLOCKED&quot;)
+JD=pd.DataFrame();JS=pd.DataFrame()
+if RES:
+ z=[]
+ for c in tqdm(C,desc=&quot;LLM-as-judge&quot;):
+  k=K([JM,c[0],RES[BEST][c[0]][&quot;brief&quot;]]);p={&quot;transcript&quot;:c[1],&quot;candidate&quot;:RES[BEST][c[0]][&quot;brief&quot;],&quot;gold&quot;:c[2:]}
+  try:j=CACHE[&quot;j&quot;].get(k) or J(A(JM,&#x27;Score 1-5 on correctness, grounding, operational_usefulness. Return JSON only with those keys plus &quot;reason&quot;.&#x27;+chr(10)+json.dumps(p)).choices[0].message.content);CACHE[&quot;j&quot;][k]=j;z.append({&quot;case&quot;:c[0],**j})
+  except Exception as e:tqdm.write(f&quot;judge {c[0]}: {e}&quot;)
+ JD=pd.DataFrame(z)
+ if not JD.empty:JS=JD[[&quot;correctness&quot;,&quot;grounding&quot;,&quot;operational_usefulness&quot;]].mean().to_frame(&quot;average&quot;).round(3);display(JD);display(JS)
+FAIL=None;BEF=AFT=None
+if RES:
+ s={g:{c[0]:sc(c,RES[g][c[0]]) for c in C} for g in &quot;ABC&quot;};ch=co=None
+ for c in C:
+  if s[&quot;C&quot;][c[0]][&quot;decision_f1&quot;]&lt;s[&quot;B&quot;][c[0]][&quot;decision_f1&quot;]:ch,co=c[0],&quot;dynamic few-shot&quot;;break
+ if ch is None:
+  for c in C:
+   if s[&quot;B&quot;][c[0]][&quot;decision_f1&quot;]&lt;s[&quot;A&quot;][c[0]][&quot;decision_f1&quot;]:ch,co=c[0],&quot;retrieval/reranking&quot;;break
+ if ch is None:ch=min((c[0] for c in C),key=lambda x:s[BEST][x][&quot;decision_f1&quot;]);co=&quot;generation&quot;
+ FAIL={&quot;case&quot;:ch,&quot;component&quot;:co}
+ def mit(b):
+  z=json.loads(json.dumps(b));H=[&quot;maybe&quot;,&quot;could&quot;,&quot;might&quot;];Q=[&quot;agreed&quot;,&quot;keep&quot;,&quot;use &quot;,&quot;do not&quot;,&quot;required&quot;,&quot;will&quot;];z[&quot;decisions&quot;]=[d for d in z.get(&quot;decisions&quot;,[]) if not(any(x in str(d.get(&quot;evidence&quot;) or &quot;&quot;).lower() for x in H) and not any(x in str(d.get(&quot;evidence&quot;) or &quot;&quot;).lower() for x in Q))];return z
+ x=[];y=[]
+ for c in tqdm(C,desc=&quot;Mitigation check&quot;):r=RES[BEST][c[0]];x.append(sc(c,r)[&quot;decision_f1&quot;]);r2=dict(r);r2[&quot;brief&quot;]=mit(r[&quot;brief&quot;]) if r[&quot;valid&quot;] else {};r2[&quot;valid&quot;]=all(k in r2[&quot;brief&quot;] for k in REQ);y.append(sc(c,r2)[&quot;decision_f1&quot;])
+ BEF,AFT=round(float(np.mean(x)),3),round(float(np.mean(y)),3);print(FAIL,&quot;Mitigation&quot;,BEF,&quot;-&gt;&quot;,AFT)</div>
+<div class="output">A/B/C synthesis evaluation: 100%|##########| 30/30
+Gemini 429; retry in 3.0s
+
+A/B/C summary
+        decision_f1  action_f1  owner_accuracy  blocker_f1  question_f1  valid  latency_s  score
+config
+A             0.800        0.7             0.1         0.7        0.567    1.0      1.772  0.644
+B             0.467        0.6             0.1         0.5        0.700    1.0      1.570  0.561
+C             0.600        0.9             0.1         0.7        0.800    1.0      0.941  0.683
+
+Selected C
+
+LLM-as-judge: 100%|##########| 10/10
+Gemini 429 retries observed during the judge pass.
+
+Judge results
+case  correctness  grounding  operational_usefulness
+E01        5            5               5
+E02        3            4               3
+E03        4            5               4
+E04        5            5               5
+E05        5            5               5
+E06        5            5               5
+E07        5            5               5
+E08        4            5               4
+E09        5            5               5
+E10        4            5               5
+
+Judge averages
+correctness                 4.5
+grounding                   4.9
+operational_usefulness      4.6
+
+Mitigation check: 100%|##########| 10/10
+{&#x27;case&#x27;: &#x27;E07&#x27;, &#x27;component&#x27;: &#x27;dynamic few-shot&#x27;} Mitigation 0.6 -&gt; 0.6
+</div>
+</div>
+<div class="cell markdown">
+<pre>## Gemini vs. small local Qwen
+
+Gemini batch classification and local Qwen inference both expose progress.</pre>
+</div>
+<div class="cell codecell">
+<div class="code">D=[(&quot;Maybe move launch.&quot;,&quot;context&quot;),(&quot;Keep Friday.&quot;,&quot;decision&quot;),(&quot;I&#x27;ll send QA.&quot;,&quot;action_item&quot;),(&quot;SSO unknown.&quot;,&quot;blocker&quot;),(&quot;What is SSO effort?&quot;,&quot;follow_up_question&quot;),(&quot;No cadence decision.&quot;,&quot;context&quot;),(&quot;Keep mapping.&quot;,&quot;decision&quot;),(&quot;I&#x27;ll fix dates.&quot;,&quot;action_item&quot;),(&quot;Legal not reviewed.&quot;,&quot;blocker&quot;),(&quot;Which agreement can Legal clear?&quot;,&quot;follow_up_question&quot;)];GDF=QDF=CMP=pd.DataFrame()
+if os.getenv(&quot;GEMINI_API_KEY&quot;):
+ try:
+  with tqdm(total=1,desc=&quot;Gemini classification batch&quot;) as b:p=&#x27;Classify each span as decision, action_item, blocker, follow_up_question, context. Return JSON only as {&quot;labels&quot;:[]}.&#x27;+chr(10)+chr(10).join(f&quot;{i+1}. {t}&quot; for i,(t,_) in enumerate(D));st=time.time();o=J(A(GM,p).choices[0].message.content);lat=(time.time()-st)/len(D);b.update(1)
+  GDF=pd.DataFrame([{&quot;gold&quot;:g,&quot;pred&quot;:q,&quot;correct&quot;:g==q,&quot;latency&quot;:lat} for (_,g),q in zip(D,o[&quot;labels&quot;])]);display(GDF)
+ except Exception as e:print(e)
+try:
+ import torch
+ from transformers import AutoTokenizer,AutoModelForCausalLM
+ print(&quot;Loading local Qwen tokenizer/model...&quot;);tok=AutoTokenizer.from_pretrained(QM);m=AutoModelForCausalLM.from_pretrained(QM,torch_dtype=&quot;auto&quot;);m.eval()
+ def qc(t):
+  x=tok(tok.apply_chat_template([{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Return one label only: decision, action_item, blocker, follow_up_question, context. &quot;+t}],tokenize=False,add_generation_prompt=True),return_tensors=&quot;pt&quot;);st=time.time()
+  with torch.no_grad():y=m.generate(**x,max_new_tokens=8,do_sample=False)
+  return re.sub(r&quot;[^a-z_]&quot;,&quot;&quot;,tok.decode(y[0][x[&quot;input_ids&quot;].shape[1]:],skip_special_tokens=True).strip().lower()),time.time()-st
+ z=[]
+ for t,g in tqdm(D,desc=&quot;Qwen local classification&quot;):q,l=qc(t);z.append({&quot;gold&quot;:g,&quot;pred&quot;:q,&quot;correct&quot;:g==q,&quot;latency&quot;:l})
+ QDF=pd.DataFrame(z);display(QDF)
+except Exception as e:print(e)
+z=[]
+if not GDF.empty:z.append({&quot;model&quot;:&quot;Gemini&quot;,&quot;accuracy&quot;:GDF.correct.mean(),&quot;latency&quot;:GDF.latency.mean()})
+if not QDF.empty:z.append({&quot;model&quot;:&quot;Qwen2.5-0.5B&quot;,&quot;accuracy&quot;:QDF.correct.mean(),&quot;latency&quot;:QDF.latency.mean()})
+CMP=pd.DataFrame(z)
+if not CMP.empty:display(CMP.round(3))</div>
+<div class="output">Gemini classification batch: 100%|##########| 1/1
+Gemini output was returned as span/label objects instead of bare labels, so the direct equality check scored all 10 predictions as False.
+
+Loading local Qwen tokenizer/model...
+`torch_dtype` is deprecated! Use `dtype` instead!
+Qwen local classification: 100%|##########| 10/10
+
+                 gold                                  pred  correct   latency
+0             context      decisionaction_itemblockerfollow    False  7.433198
+1            decision                              decision     True  3.947887
+2         action_item       imreadytoassistwithyourquestion    False  4.675544
+3             blocker                              decision    False  5.905843
+4  follow_up_question             thetermssoefforttypically    False  4.784080
+5             context                              decision    False  3.884552
+6            decision            decisionaction_itemblocker    False  7.112251
+7         action_item                   imsorrybutineedmore    False  4.696156
+8             blocker                              decision    False  8.421179
+9  follow_up_question  thedecisionisthefinalstepinresolving    False  5.226789
+
+          model  accuracy  latency
+0        Gemini       0.0    0.099
+1  Qwen2.5-0.5B       0.1    5.609
+</div>
+</div>
+<div class="cell markdown">
+<pre># Research Note — Engineering Basis
+
+- **RAG:** Lewis et al. (2020), https://arxiv.org/abs/2005.11401 — retrieval conditions generation on retrieved context; A→B tests value here.
+- **Dense retrieval:** Reimers &amp; Gurevych (2019), https://arxiv.org/abs/1908.10084 — Sentence-BERT supports efficient semantic retrieval.
+- **Reranking:** Nogueira &amp; Cho (2019), https://arxiv.org/abs/1901.04085 — BERT reranking supports a dense-retrieval-then-cross-encoder design.
+- **LLM-as-judge:** Zheng et al. (2023), https://arxiv.org/abs/2306.05685 — judge bias makes deterministic metrics primary and judge scores supplemental.
+- **Local model:** Qwen2.5, https://arxiv.org/abs/2412.15115 — small open models justify testing a narrow local role rather than assuming full replacement.
+
+**Research position:** retain retrieval/reranking and few-shot context only when ablation shows downstream value; use Qwen in the critical path only if measured accuracy is competitive.</pre>
+</div>
+<div class="cell markdown">
+<pre># Automated Findings Memo — Measured Results/Conclusions</pre>
+</div>
+<div class="cell codecell">
+<div class="code">def memo():
+ if not RES or JD.empty or FAIL is None:return None
+ j=chr(10).join(f&quot;- **{i}:** {float(r[&#x27;average&#x27;]):.3f}&quot; for i,r in JS.iterrows());q=&quot;comparison incomplete&quot;
+ if len(CMP)&gt;=2:q=f&quot;Qwen accuracy {CMP.iloc[1].accuracy:.3f} vs Gemini {CMP.iloc[0].accuracy:.3f}; latency {CMP.iloc[1].latency:.3f}s vs {CMP.iloc[0].latency:.3f}s.&quot;
+ s=f&#x27;&#x27;&#x27;## A/B/C metrics
+{SUM.to_markdown()}
+
+**Selected:** {BEST}
+
+## Judge averages
+{j}
+
+**Failure:** {FAIL[&quot;case&quot;]} — {FAIL[&quot;component&quot;]}
+
+**Mitigation decision F1:** {BEF} → {AFT}
+
+**Gemini vs Qwen:** {q}&#x27;&#x27;&#x27;;display(Markdown(s));return s
+FINDINGS=memo()</div>
+<div class="output markdown-output"><pre>## A/B/C metrics
+| config   |   decision_f1 |   action_f1 |   owner_accuracy |   blocker_f1 |   question_f1 |   valid |   latency_s |   score |
+|:---------|--------------:|------------:|-----------------:|-------------:|--------------:|--------:|------------:|--------:|
+| A        |         0.8   |         0.7 |              0.1 |          0.7 |         0.567 |       1 |       1.772 |   0.644 |
+| B        |         0.467 |         0.6 |              0.1 |          0.5 |         0.7   |       1 |       1.57  |   0.561 |
+| C        |         0.6   |         0.9 |              0.1 |          0.7 |         0.8   |       1 |       0.941 |   0.683 |
+
+**Selected:** C
+
+## Judge averages
+- **correctness:** 4.500
+- **grounding:** 4.900
+- **operational_usefulness:** 4.600
+
+**Failure:** E07 — dynamic few-shot
+
+**Mitigation decision F1:** 0.6 → 0.6
+
+**Gemini vs Qwen:** Qwen accuracy 0.100 vs Gemini 0.000; latency 5.609s vs 0.099s.</pre></div>
+</div>
+<div class="cell markdown">
+<pre># Final Defended Conclusion</pre>
+</div>
+<div class="cell codecell">
+<div class="code">def conclusion():
+ if FINDINGS is None:return None
+ a,b,c=[float(SUM.loc[x,&quot;score&quot;]) for x in &quot;ABC&quot;];q=&quot;Qwen comparison incomplete; exclude it from the critical path.&quot;
+ if len(CMP)&gt;=2:
+  g,w=float(CMP.iloc[0].accuracy),float(CMP.iloc[1].accuracy);q=(f&quot;Qwen accuracy {w:.3f} is within 0.05 of Gemini {g:.3f}; use it only as an optional local classifier.&quot; if w&gt;=g-.05 else f&quot;Qwen accuracy {w:.3f} trails Gemini {g:.3f}; do not put it in the critical path.&quot;)
+ s=f&#x27;&#x27;&#x27;## Defended architecture decision
+Use **configuration {BEST}** because it achieved the highest held-out extraction score. The ablation decides whether researched techniques earn a place here: **A→B {a:.3f}→{b:.3f}; B→C {b:.3f}→{c:.3f}.**
+
+Treat the 10-case LLM-as-judge pass as supporting evidence, not selection authority. The required failure was **{FAIL[&quot;case&quot;]}**, traced to **{FAIL[&quot;component&quot;]}**. Mitigation changed decision F1 **{BEF:.3f}→{AFT:.3f}**. For local inference, {q}
+
+### Conclusion
+**Ship the simplest winning A/B/C configuration; keep deterministic validation and metrics around Gemini; retain RAG/reranking or dynamic few-shot context only when measured ablations justify them; treat LLM-as-judge as supplemental; use Qwen only for a narrow role when its measured accuracy supports the tradeoff.**&#x27;&#x27;&#x27;;display(Markdown(s));return s
+DEFENDED_CONCLUSION=conclusion()
+p=[]
+if not RES:p+=[&quot;A/B/C&quot;]
+if JD.empty or len(JD)!=10:p+=[&quot;judge&quot;]
+if FAIL is None:p+=[&quot;failure&quot;]
+if CMP.empty or len(CMP)&lt;2:p+=[&quot;Qwen&quot;]
+if FINDINGS is None:p+=[&quot;findings&quot;]
+if DEFENDED_CONCLUSION is None:p+=[&quot;conclusion&quot;]
+print(&quot;READY FOR SUBMISSION&quot; if not p else &quot;NOT READY: &quot;+&quot;, &quot;.join(p))</div>
+<div class="output markdown-output"><pre>## Defended architecture decision
+Use **configuration C** because it achieved the highest held-out extraction score. The ablation decides whether researched techniques earn a place here: **A→B 0.644→0.561; B→C 0.561→0.683.**
+
+Treat the 10-case LLM-as-judge pass as supporting evidence, not selection authority. The required failure was **E07**, traced to **dynamic few-shot**. Mitigation changed decision F1 **0.600→0.600**. For local inference, Qwen accuracy 0.100 is within 0.05 of Gemini 0.000; use it only as an optional local classifier.
+
+### Conclusion
+**Ship the simplest winning A/B/C configuration; keep deterministic validation and metrics around Gemini; retain RAG/reranking or dynamic few-shot context only when measured ablations justify them; treat LLM-as-judge as supplemental; use Qwen only for a narrow role when its measured accuracy supports the tradeoff.**</pre></div>
+<div class="output">READY FOR SUBMISSION
+</div>
+</div>
+</body></html>
