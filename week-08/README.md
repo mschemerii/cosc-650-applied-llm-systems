@@ -2,7 +2,7 @@
 
 ## Capstone: Meeting-to-Action Assistant
 
-The Week 8 capstone is a **Meeting-to-Action Assistant** that takes an existing meeting transcript and produces a structured operational brief containing:
+The Week 8 capstone is a **Meeting-to-Action Assistant** that turns an existing meeting transcript into a structured operational brief containing:
 
 - executive summary
 - decisions made
@@ -11,15 +11,9 @@ The Week 8 capstone is a **Meeting-to-Action Assistant** that takes an existing 
 - blockers
 - follow-up questions
 
-The project is intentionally small and measurable. It reuses earlier course work rather than rebuilding the same techniques from scratch:
+The project is intentionally small, measurable, and portfolio-ready. It integrates techniques from earlier weeks into one working system instead of treating them as separate exercises.
 
-- **Week 3 — structured prompting/output:** the capstone uses a stable JSON-oriented operational-brief contract.
-- **Week 4 — deterministic validation:** Python validates required fields and exposes malformed outputs instead of silently accepting them.
-- **Week 5 — retrieval-augmented generation:** local MiniLM embeddings and FAISS retrieve task-relevant operational guidance.
-- **Week 6 — reranking:** a local cross-encoder reranks retrieved guidance and candidate examples before they are added to the prompt.
-- **Week 7 — dynamic few-shot prompting:** semantically similar examples are selected dynamically and evaluated as a separate ablation condition.
-
-### Architecture
+## Architecture
 
 ```text
 meeting transcript
@@ -34,20 +28,52 @@ Gemini Flash structured extraction
       ↓
 deterministic validation
       ↓
-metrics + judge + failure trace
+metrics + judge + failure trace + mitigation
+      ↓
+measured architecture decision
 ```
 
-Gemini is used only for the reasoning-heavy parts of the workflow: interpreting ambiguous meeting language, resolving owners from context, synthesizing the operational brief, and judging the final selected configuration. Retrieval, reranking, validation, matching, metrics, caching, and the targeted mitigation are local or deterministic.
+Gemini is reserved for reasoning-heavy work: interpreting ambiguous meeting language, resolving owners from context, synthesizing the brief, and performing the LLM-as-judge pass. Retrieval, reranking, validation, matching, metrics, caching, and the targeted mitigation are local or deterministic.
 
-### Submission notebook
+## Integration by reuse
 
-[`week8_meeting_to_action_capstone.ipynb`](week8_meeting_to_action_capstone.ipynb) is the **self-contained capstone notebook** and the primary submission artifact. The held-out evaluation cases, retrieval corpus, few-shot examples, prompts, Gemini calls, retry/backoff logic, in-notebook cache, deterministic validation, evaluation, failure trace, mitigation, local-model comparison, and final research note are all defined directly inside the notebook.
+The capstone directly reuses prior course components:
 
-It does not require a project-local Python module, external dataset, or separate research-note file.
+- **Week 3 — structured prompting/output:** stable JSON-oriented output contract and prompt discipline.
+- **Week 4 — deterministic validation:** required-field checks and explicit handling of malformed output.
+- **Week 5 — retrieval-augmented generation:** `all-MiniLM-L6-v2` embeddings with FAISS retrieval.
+- **Week 6 — reranking:** local cross-encoder reranking before context is added to the prompt.
+- **Week 7 — dynamic few-shot selection:** semantically similar examples are selected dynamically and tested as a separate condition.
 
-### Evaluation
+This satisfies the assignment requirement to combine at least three prior techniques while reusing earlier work rather than rebuilding it from scratch.
 
-The notebook evaluates three configurations over the same **10 held-out meeting cases**:
+## Submission notebook
+
+[`week8_meeting_to_action_capstone.ipynb`](week8_meeting_to_action_capstone.ipynb) is the **self-contained capstone notebook** and the authoritative implementation.
+
+The notebook embeds:
+
+- the held-out evaluation set
+- retrieval guidance
+- few-shot examples
+- MiniLM/FAISS retrieval
+- cross-encoder reranking
+- Gemini prompting
+- retry/backoff handling
+- in-notebook caching
+- deterministic validation
+- evaluation metrics
+- LLM-as-judge logic
+- failure tracing
+- mitigation
+- Gemini-vs-Qwen comparison
+- the dynamically generated research note
+
+It does not depend on project-local Python modules, an external dataset, or a separate research-note file.
+
+## Evaluation
+
+The same **10 held-out meeting cases** are evaluated under three configurations:
 
 1. **A — transcript only**
 2. **B — transcript + retrieved/reranked operational guidance**
@@ -63,17 +89,17 @@ Concrete metrics include:
 - structured-output validity
 - latency
 
-The configuration with the highest deterministic aggregate extraction score is then evaluated by Gemini-as-judge across all 10 held-out cases on three named dimensions:
+The best deterministic configuration is then evaluated by Gemini-as-judge across all 10 held-out cases on three named dimensions:
 
 - **correctness**
 - **grounding**
 - **operational usefulness**
 
-This keeps the judge set inside the required 10–20 case range while avoiding unnecessary free-tier calls.
+This keeps the judge set within the required 10–20 cases while limiting unnecessary free-tier calls.
 
-### Small local Qwen comparison
+## Small local-model comparison
 
-The notebook also measures a small local Qwen model, **`Qwen/Qwen2.5-0.5B-Instruct`**, on a narrower 20-span classification task using these labels:
+The notebook also compares Gemini with **`Qwen/Qwen2.5-0.5B-Instruct`** on a narrower 20-span classification benchmark with these labels:
 
 - `decision`
 - `action_item`
@@ -81,31 +107,35 @@ The notebook also measures a small local Qwen model, **`Qwen/Qwen2.5-0.5B-Instru
 - `follow_up_question`
 - `context`
 
-Gemini classifies the same 20 spans in one batched call. The comparison reports accuracy and latency for both models, while Qwen has no API cost. The purpose is not to force the local model into the final architecture; it is to measure whether it is good enough for a limited local role.
+Both models classify the same spans. The notebook reports accuracy and latency for each. Qwen runs locally on CPU with no API cost; Gemini performs the same benchmark in one batched API call.
 
-### Required failure mode
+The purpose of this comparison is not to force the smaller model into the final architecture. It tests whether a small local model is performant enough for a narrow classification role while Gemini remains responsible for ambiguous reasoning and synthesis.
 
-The target failure is a suggestion or discussion point being incorrectly promoted to a confirmed decision. The notebook uses the A/B/C comparison and retrieval logs to trace the failure to one of three places:
+## Required failure mode
+
+The target failure is a suggestion or discussion point being incorrectly promoted to a confirmed decision.
+
+The notebook traces the failure using evidence from the A/B/C comparison and retrieval logs. It attributes the failure to one of three components:
 
 - dynamic few-shot context
 - retrieved/reranked context
 - generation/extraction
 
-A narrow deterministic filter then removes a predicted decision when its evidence contains suggestion language without a commitment cue. Decision F1 is measured before and after the mitigation.
+A narrow deterministic filter then removes a predicted decision when its supporting evidence contains suggestion language without a commitment cue. Decision F1 is measured before and after mitigation.
 
-### Free-tier reliability
+## Reliability and free-tier limits
 
-The notebook caps an uncached run at:
+A fully uncached run is capped at:
 
-- 30 synthesis calls — 10 cases × 3 ablations
-- 10 judge calls — selected configuration × 10 held-out cases
-- 1 Gemini batch-classification call for the Qwen comparison
+- **30 synthesis calls** — 10 held-out cases × 3 configurations
+- **10 judge calls** — selected configuration × 10 cases
+- **1 Gemini batch classification call** — small-model comparison
 
-Completed Gemini responses are cached in notebook memory and can be copied back into `PRELOADED_CACHE_JSON` for a later clean rerun. Gemini calls use exponential retry/backoff for transient 429/5xx errors, including temporary 503 high-demand failures.
+Gemini calls use exponential retry/backoff for transient 429 and 5xx errors, including temporary 503 high-demand failures. Completed responses are cached in notebook memory and can be copied into `PRELOADED_CACHE_JSON` before a later clean rerun.
 
-### Research note
+## Research note
 
-The research note is generated **at the end of the notebook from the actual measured variables**. After execution it reports and answers:
+The research note is generated **at the end of the notebook from the actual measured variables**. After execution it records and answers:
 
 - the A/B/C deterministic metric table
 - which configuration performed best and why
@@ -114,14 +144,34 @@ The research note is generated **at the end of the notebook from the actual meas
 - the three judge-dimension averages
 - the identified failure case and responsible component
 - mitigation before/after results
-- how the local Qwen model compared with Gemini
-- the final architecture decision supported by the measurements
+- how local Qwen compared with Gemini
+- the final architecture decision and why the measurements support it
 
 No result is claimed before it appears in the executed notebook output.
 
-### Scope boundaries
+## Rubric alignment
 
-The capstone stops after producing and evaluating the operational brief. It does not include audio transcription, live Teams/Zoom integration, automatic email/task execution, fine-tuning, deployment, a web UI, or multi-agent orchestration.
+| Rubric area | Evidence in this project |
+| --- | --- |
+| Integration by Reuse | Weeks 3–7 components combined into one working system |
+| Evaluation | 10 held-out cases, concrete metrics, and Gemini judge on three named dimensions |
+| Required Failure Mode | A/B/C comparison, traced component, evidence, and mitigation |
+| README and Architecture | This README documents architecture, techniques, rationale, scope, and evaluation |
+| Portfolio Curation | Root README prominently links the project and preserves the eight-week story |
+
+## Scope boundaries
+
+The capstone stops after producing and evaluating the operational brief. It does **not** include:
+
+- audio transcription
+- live Teams/Zoom integration
+- automatic email or task creation
+- fine-tuning
+- deployment
+- a web UI
+- multi-agent orchestration
+
+Those capabilities may be reasonable extensions later, but they are intentionally excluded so the submitted system remains small, working, and measured.
 
 ---
 
