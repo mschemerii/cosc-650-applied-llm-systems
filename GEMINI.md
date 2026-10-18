@@ -28,7 +28,7 @@ The final results and decision memo are generated from the current executed metr
 
 The Week 8 capstone is the **Meeting-to-Action Assistant** in `week-08/`. The authoritative implementation is the self-contained notebook `week-08/week8_meeting_to_action_capstone.ipynb`.
 
-AI assistance was used to scaffold and debug the notebook, evaluation harness, retrieval/reranking integration, deterministic validation, failure-trace logic, and repository documentation. The measured results, interpretation of those results, and final architecture decision must be based on the executed notebook outputs.
+AI assistance was used to scaffold and debug the notebook, evaluation harness, retrieval/reranking integration, deterministic validation, retry/backoff handling, local-model comparison, failure-trace logic, and repository documentation. The measured results, interpretation of those results, and final architecture decision are based on the executed notebook outputs.
 
 The integrated system reuses prior course techniques rather than rebuilding them:
 
@@ -38,12 +38,14 @@ The integrated system reuses prior course techniques rather than rebuilding them
 - Week 6 cross-encoder reranking
 - Week 7 dynamic few-shot retrieval and held-out evaluation discipline
 
-Gemini Flash is used for structured meeting-brief synthesis and as the LLM-as-judge model. The notebook evaluates 10 held-out cases under three ablations, so a fully uncached run is capped at 30 synthesis calls and 30 judge calls.
+Gemini Flash is used for structured meeting-brief synthesis. The notebook evaluates 10 held-out cases under three ablations, so a fully uncached run is capped at **30 synthesis calls**. The configuration with the highest deterministic extraction score is then judged across all 10 held-out cases on correctness, grounding, and operational usefulness, capped at **10 judge calls**.
 
-The notebook is self-contained: the held-out cases, retrieval guidance, few-shot examples, prompts, validation code, evaluation metrics, judge logic, failure tracing, and mitigation are all embedded directly in the notebook. No external project module or dataset is required.
+The notebook also compares Gemini against **Qwen/Qwen2.5-0.5B-Instruct** on a 20-span five-label classification task (`decision`, `action_item`, `blocker`, `follow_up_question`, `context`). Gemini performs the comparison in one batched API call; Qwen runs locally on CPU. This comparison is supplemental evidence for whether a small local model is good enough for a narrow role and does not force Qwen into the final architecture.
+
+The notebook is self-contained: the held-out cases, retrieval guidance, few-shot examples, prompts, validation code, evaluation metrics, judge logic, failure tracing, mitigation, local Qwen benchmark, and research note are all embedded directly in the notebook. No external project module or dataset is required.
 
 To avoid repeated free-tier calls, the notebook maintains an in-memory response cache and prints a `CACHE_EXPORT` JSON string after execution. That string can be pasted back into the notebook's `PRELOADED_CACHE_JSON` variable before a later rerun, preserving the single-file submission design.
 
-Local MiniLM retrieval, cross-encoder reranking, validation, matching, metrics, and the targeted mitigation run without GPU acceleration.
+Gemini calls use exponential retry/backoff for transient 429 and 5xx errors, including temporary 503 high-demand responses. Local MiniLM retrieval, cross-encoder reranking, Qwen inference, validation, matching, metrics, and the targeted mitigation run without GPU acceleration.
 
-No model-generated metric or conclusion should be reported as a project result until the notebook has been executed. The final research note and README results should be updated from measured outputs rather than assumed performance.
+The research note is generated dynamically at the end of the notebook from measured variables. No model-generated metric or conclusion should be reported as a project result until the notebook has been executed successfully.
